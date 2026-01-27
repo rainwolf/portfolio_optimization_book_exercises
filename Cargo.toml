@@ -1,0 +1,8 @@
+[package]
+name = "portfolio_optimization"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+polars = { version = "0.52.0", features = ["lazy", "parquet"] }
+plotlars = "0.11.4"
