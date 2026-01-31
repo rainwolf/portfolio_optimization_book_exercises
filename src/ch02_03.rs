@@ -73,13 +73,16 @@ pub fn exercise02_03() {
     // centered or not draws a translated picture
 
     let k_s = vec![3, 9, 30, 90];
-    let col_strings: Vec<String> = k_s
+    let centered_col_strings: Vec<String> = k_s
         .iter()
         .map(|k| format!("volatility_centered_k{}", k))
         .collect();
+    let uncentered_col_strings: Vec<String> = k_s
+        .iter()
+        .map(|k| format!("volatility_not_centered_k{}", k))
+        .collect();
     for i in 0..k_s.len() {
         let k = k_s[i];
-        let col_string = &col_strings[i];
         plot_data = plot_data
             .lazy()
             .with_column(
@@ -92,26 +95,47 @@ pub fn exercise02_03() {
                         ..Default::default()
                     })
                     .sqrt()
-                    .alias(col_string),
+                    .alias(&centered_col_strings[i]),
+            )
+            .with_column(
+                col("BTC_returns")
+                    .pow(lit(2))
+                    .rolling_mean(RollingOptionsFixedWindow {
+                        window_size: k,
+                        min_periods: 1,
+                        center: false,
+                        ..Default::default()
+                    })
+                    .sqrt()
+                    .alias(&uncentered_col_strings[i]),
             )
             .collect()
             .unwrap();
     }
-    let plots = col_strings
+    let mut strings = Vec::new();
+    for i in 0..k_s.len() {
+        strings.push(&centered_col_strings[i]);
+        strings.push(&uncentered_col_strings[i]);
+    }
+    let plots: Vec<Box<dyn PlotHelper>> = strings
         .iter()
-        .map(|s| {
-            TimeSeriesPlot::builder()
-                .data(&plot_data)
-                .x("Date")
-                .y(s)
-                .build()
+        .map(|&s| {
+            Box::new(
+                TimeSeriesPlot::builder()
+                    .data(&plot_data)
+                    .x("Date")
+                    .y(s)
+                    .plot_title(s)
+                    .build(),
+            ) as Box<dyn PlotHelper>
         })
-        .collect::<Vec<TimeSeriesPlot>>();
+        .collect();
 
     SubplotGrid::regular()
-        .rows(k_s.len())
+        .rows(strings.len())
         .cols(1)
-        .plots(vec![&plots[0], &plots[1], &plots[2], &plots[3]])
+        .plots(plots.iter().map(|p| p.as_ref()).collect())
+        .h_gap(0.1)
         .build()
         .plot();
 
