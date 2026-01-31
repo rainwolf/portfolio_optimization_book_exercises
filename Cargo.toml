@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-polars = { version = "0.52.0", features = ["lazy", "parquet"] }
+polars = { version = "0.52.0", features = ["lazy", "parquet", "temporal", "rolling_window"] }
 plotlars = "0.11.4"
