@@ -405,7 +405,7 @@ version = "3.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89ec27229c38ed0eb3c0feee3d2c1d6a4379ae44f418a29a658890e062d8f365"
 dependencies = [
- "darling 0.21.3",
+ "darling 0.23.0",
  "ident_case",
  "prettyplease",
  "proc-macro2",
@@ -440,6 +440,12 @@ dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
 ]
+
+[[package]]
+name = "build_html"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10b322c8c13b6b775e5befd834d2a27c683506f1100b56a7b39d33c28024ba54"
 
 [[package]]
 name = "built"
@@ -2639,7 +2645,9 @@ dependencies = [
 name = "portfolio_optimization"
 version = "0.1.0"
 dependencies = [
+ "build_html",
  "plotlars",
+ "plotly",
  "polars",
 ]
 
