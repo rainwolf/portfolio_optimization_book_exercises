@@ -9,8 +9,8 @@ fn main() {
     // exercise02_01();
     // use crate::ch02_02::exercise02_02;
     // exercise02_02();
-    use crate::ch02_03::exercise02_03;
-    exercise02_03();
-    // use crate::ch02_04::exercise02_04;
-    // exercise02_04();
+    // use crate::ch02_03::exercise02_03;
+    // exercise02_03();
+    use crate::ch02_04::exercise02_04;
+    exercise02_04();
 }
