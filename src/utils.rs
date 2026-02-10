@@ -1,8 +1,8 @@
-use polars::prelude::*;
 use build_html::*;
+use plotly::Trace;
+use polars::prelude::*;
 use std::env;
 use std::{fs::File, io::Write, process::Command};
-use plotly::Trace;
 
 pub fn load_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
@@ -24,7 +24,10 @@ pub fn show_plot(traces: Vec<Box<dyn Trace>>) {
     for (i, trace) in traces.iter().enumerate() {
         let mut plot = Plot::new();
         plot.add_trace(trace.clone());
-        base.add_raw(plot.to_inline_html(Some(format!("test_{}", i).as_str())).as_str());
+        base.add_raw(
+            plot.to_inline_html(Some(format!("test_{}", i).as_str()))
+                .as_str(),
+        );
     }
     let html = base.to_html_string();
 
