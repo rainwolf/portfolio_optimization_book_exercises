@@ -81,11 +81,10 @@ pub fn exercise02_04() {
                             .map(|v| match v {
                                 Some(x) => normal.inverse_cdf((x - 0.5) / series.len() as f64),
                                 None => 0.0,
-                            })
-                            .collect::<Vec<f64>>();
-                        Ok(Series::new("normal_quantiles".into(), result).into())
+                            });
+                        Ok(Series::from_iter(result).into())
                     },
-                    |_, _| Ok(Field::new("normal_quantiles".into(), DataType::Float64)),
+                    |schema, field| Ok(field.clone()),
                 )
                 .alias("normal_quantiles"),
         )
@@ -102,11 +101,10 @@ pub fn exercise02_04() {
                             .map(|v| match v {
                                 Some(x) => uniform.inverse_cdf((x - 0.5) / series.len() as f64),
                                 None => 0.0,
-                            })
-                            .collect::<Vec<f64>>();
-                        Ok(Series::new("uniform_quantiles".into(), result).into())
+                            });
+                        Ok(Series::from_iter(result).into())
                     },
-                    |_, _| Ok(Field::new("uniform_quantiles".into(), DataType::Float64)),
+                    |schema, field| Ok(field.clone()),
                 )
                 .alias("uniform_quantiles"),
         )
