@@ -1,8 +1,8 @@
 use plotly::{Scatter, Trace};
 
+use super::utils::{load_data, show_plot};
 use plotlars::{Plot, ScatterPlot};
 use statrs::distribution::Uniform;
-use super::utils::{load_data, show_plot};
 
 pub fn exercise02_04() {
     let data_set = load_data();
@@ -61,46 +61,55 @@ pub fn exercise02_04() {
     use statrs::distribution::{Normal, Uniform};
     let n = plot_data.height();
     let qq_plot_data = plot_data
+        .clone()
         .lazy()
         .select([col("BTC_log_returns")
             .sort(SortOptions::default().with_order_descending(false))
             .alias("sorted_BTC_log_returns")])
         .with_row_index("index", Some(1))
+        .with_column((col("index") / lit(n as f64 + 1.0)).alias("quantiles"))
         .with_column(
-            (col("index") / lit(n as f64 + 1.0)).alias("quantiles"),
+            col("index")
+                .cast(DataType::Float64)
+                .apply(
+                    |series| {
+                        let normal = Normal::new(0.0, 1.0).unwrap();
+                        let result = series
+                            .f64()
+                            .unwrap()
+                            .iter()
+                            .map(|v| match v {
+                                Some(x) => normal.inverse_cdf((x - 0.5) / series.len() as f64),
+                                None => 0.0,
+                            })
+                            .collect::<Vec<f64>>();
+                        Ok(Series::new("normal_quantiles".into(), result).into())
+                    },
+                    |_, _| Ok(Field::new("normal_quantiles".into(), DataType::Float64)),
+                )
+                .alias("normal_quantiles"),
         )
-        .with_column(col("index").cast(DataType::Float64).apply(
-            |series| {
-                let normal = Normal::new(0.0, 1.0).unwrap();
-                let result = series
-                    .f64()
-                    .unwrap()
-                    .iter()
-                    .map(|v| match v {
-                        Some(x) => normal.inverse_cdf((x - 0.5) / series.len() as f64),
-                        None => 0.0,
-                    })
-                    .collect::<Vec<f64>>();
-                Ok(Series::new("normal_quantiles".into(), result).into())
-            },
-            |_, _| Ok(Field::new("normal_quantiles".into(), DataType::Float64)),
-        ).alias("normal_quantiles"))
-        .with_column(col("index").cast(DataType::Float64).apply(
-            |series| {
-                let uniform = Uniform::new(0.0, 1.0).unwrap();
-                let result = series
-                    .f64()
-                    .unwrap()
-                    .iter()
-                    .map(|v| match v {
-                        Some(x) => uniform.inverse_cdf((x - 0.5) / series.len() as f64),
-                        None => 0.0,
-                    })
-                    .collect::<Vec<f64>>();
-                Ok(Series::new("uniform_quantiles".into(), result).into())
-            },
-            |_, _| Ok(Field::new("uniform_quantiles".into(), DataType::Float64)),
-        ).alias("uniform_quantiles"))
+        .with_column(
+            col("index")
+                .cast(DataType::Float64)
+                .apply(
+                    |series| {
+                        let uniform = Uniform::new(0.0, 1.0).unwrap();
+                        let result = series
+                            .f64()
+                            .unwrap()
+                            .iter()
+                            .map(|v| match v {
+                                Some(x) => uniform.inverse_cdf((x - 0.5) / series.len() as f64),
+                                None => 0.0,
+                            })
+                            .collect::<Vec<f64>>();
+                        Ok(Series::new("uniform_quantiles".into(), result).into())
+                    },
+                    |_, _| Ok(Field::new("uniform_quantiles".into(), DataType::Float64)),
+                )
+                .alias("uniform_quantiles"),
+        )
         .collect()
         .unwrap();
     // ScatterPlot::builder()
@@ -121,7 +130,9 @@ pub fn exercise02_04() {
             .f64()
             .unwrap()
             .to_vec(),
-    ).mode(plotly::common::Mode::Markers).name("Q-Q Plot") as Box<dyn Trace>;
+    )
+    .mode(plotly::common::Mode::Markers)
+    .name("Q-Q Plot") as Box<dyn Trace>;
     let uniform_qq = Scatter::new(
         qq_plot_data
             .column("uniform_quantiles")
@@ -135,9 +146,30 @@ pub fn exercise02_04() {
             .f64()
             .unwrap()
             .to_vec(),
-    ).mode(plotly::common::Mode::Markers).name("Q-Q Plot") as Box<dyn Trace>;
+    )
+    .mode(plotly::common::Mode::Markers)
+    .name("Q-Q Plot") as Box<dyn Trace>;
     plots.push(normal_qq);
     plots.push(uniform_qq);
     show_plot(plots);
     // log returns seem uniformly distributed, not Gaussian
+
+    let kurtosis_skewness_data = plot_data
+        .column("BTC_log_returns")
+        .unwrap()
+        .f64()
+        .unwrap()
+        .clone()
+        .into_series();
+    let kurtosis = kurtosis_skewness_data
+        .kurtosis(false, false)
+        .unwrap()
+        .unwrap();
+    let skewness = kurtosis_skewness_data.skew(false).unwrap().unwrap();
+    println!("\n\nKurtosis of BTC log returns: {}\n\n", kurtosis);
+    println!("\n\nSkewness of BTC log returns: {}\n\n", skewness);
+
+    // kurtosis and skewness indicate that the distribution of log returns has heavier tails
+    // and is more skewed than a normal distribution,
+    // which is consistent with the observation from the Q-Q plot.
 }
