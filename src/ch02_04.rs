@@ -74,14 +74,10 @@ pub fn exercise02_04() {
                 .apply(
                     |series| {
                         let normal = Normal::new(0.0, 1.0).unwrap();
-                        let result = series
-                            .f64()
-                            .unwrap()
-                            .iter()
-                            .map(|v| match v {
-                                Some(x) => normal.inverse_cdf((x - 0.5) / series.len() as f64),
-                                None => 0.0,
-                            });
+                        let result = series.f64().unwrap().iter().map(|v| match v {
+                            Some(x) => normal.inverse_cdf((x - 0.5) / series.len() as f64),
+                            None => 0.0,
+                        });
                         Ok(Series::from_iter(result).into())
                     },
                     |schema, field| Ok(field.clone()),
@@ -94,14 +90,10 @@ pub fn exercise02_04() {
                 .apply(
                     |series| {
                         let uniform = Uniform::new(0.0, 1.0).unwrap();
-                        let result = series
-                            .f64()
-                            .unwrap()
-                            .iter()
-                            .map(|v| match v {
-                                Some(x) => uniform.inverse_cdf((x - 0.5) / series.len() as f64),
-                                None => 0.0,
-                            });
+                        let result = series.f64().unwrap().iter().map(|v| match v {
+                            Some(x) => uniform.inverse_cdf((x - 0.5) / series.len() as f64),
+                            None => 0.0,
+                        });
                         Ok(Series::from_iter(result).into())
                     },
                     |schema, field| Ok(field.clone()),
@@ -150,6 +142,7 @@ pub fn exercise02_04() {
     plots.push(normal_qq);
     plots.push(uniform_qq);
     show_plot(plots);
+    // println!("{:?}", qq_plot_data);
     // log returns seem uniformly distributed, not Gaussian
 
     let kurtosis_skewness_data = plot_data
