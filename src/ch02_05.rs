@@ -1,17 +1,7 @@
-use super::utils::{load_data, show_plot};
+use super::utils::{auto_correlation, load_data, show_plot};
 use plotly::{Scatter, Trace};
 use polars::prelude::cov::pearson_corr;
 use polars::prelude::*;
-
-pub fn auto_correlation(data: &DataFrame, column: &str, lag: i32) -> Option<f64> {
-    let col1 = data
-        .column(column)
-        .unwrap()
-        .cast(&DataType::Float64)
-        .unwrap();
-    let col2 = col1.shift(lag.into());
-    pearson_corr(col1.f64().unwrap(), col2.f64().unwrap())
-}
 
 pub fn exercise02_05() {
     let data_set = load_data();
