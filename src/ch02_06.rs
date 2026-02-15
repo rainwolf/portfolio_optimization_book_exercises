@@ -46,18 +46,14 @@ pub fn exercise02_06() {
     // show_plot(plots);
 
     let index_data_set = load_index_data();
-    let index_corr_data_set = corr_data_set
-        .insert_column(
-            number_of_cols,
-            index_data_set
-                .clone()
-                .select([col("SP500_INDEX")])
-                .collect()
-                .unwrap()
-                .column("SP500_INDEX")
-                .unwrap()
-                .clone(),
+    let index_corr_data_set = data_set
+        .join(
+            index_data_set,
+            [col("Date")],
+            [col("Date")],
+            JoinArgs::new(JoinType::Inner),
         )
+        .collect()
         .unwrap();
     let mut index_correlations: Vec<f64> = Vec::new();
     for i in 0..number_of_cols {
