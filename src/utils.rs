@@ -9,7 +9,7 @@ pub fn load_crypto_data() -> LazyFrame {
         PlPath::new("./cryptos_2017to2021_daily.parquet"),
         Default::default(),
     )
-        .unwrap();
+    .unwrap();
     // let print_set = data_set.clone();
     // println!("{:?}", print_set.first().collect().unwrap());
     data_set
@@ -20,9 +20,20 @@ pub fn load_stocks_data() -> LazyFrame {
         PlPath::new("./SP500_stocks_2015to2020.parquet"),
         Default::default(),
     )
-        .unwrap();
+    .unwrap();
     // let print_set = data_set.clone();
     // println!("{:?}", print_set.first().collect().unwrap());
+    data_set
+}
+
+pub fn load_index_data() -> LazyFrame {
+    let data_set = LazyFrame::scan_parquet(
+        PlPath::new("./SP500_index_2015to2020.parquet"),
+        Default::default(),
+    )
+    .unwrap();
+    let print_set = data_set.clone();
+    println!("{:?}", print_set.first().collect().unwrap());
     data_set
 }
 
