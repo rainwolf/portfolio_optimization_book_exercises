@@ -1,13 +1,15 @@
-use super::utils::{cross_correlation, load_index_data, load_stocks_data, show_plot};
+use super::utils::{
+    cross_correlation, load_crypto_data, load_index_data, load_stocks_data, show_plot,
+};
 use plotly::{HeatMap, Trace};
 use polars::prelude::*;
 use rand::seq::{IndexedRandom, index};
 
 pub fn exercise02_06() {
-    let data_set = load_stocks_data();
+    let stocks_data_set = load_stocks_data();
     // print!("{:?}", data_set.clone().first().collect().unwrap());
     // print!("{:?}", data_set.clone().collect().unwrap().schema());
-    let col_names = data_set
+    let stock_col_names = stocks_data_set
         .clone()
         .collect()
         .unwrap()
@@ -18,7 +20,7 @@ pub fn exercise02_06() {
         .collect::<Vec<String>>();
     let number_of_cols = 10;
     let mut rng = &mut rand::rng();
-    let random_cols = col_names
+    let random_cols = stock_col_names
         .sample(&mut rng, number_of_cols)
         .into_iter()
         .map(|s| s.clone())
@@ -29,7 +31,7 @@ pub fn exercise02_06() {
         .map(|s| col(s.to_string()))
         .collect::<Vec<Expr>>();
 
-    let mut corr_data_set = data_set.clone().select(data_cols).collect().unwrap();
+    let mut corr_data_set = stocks_data_set.clone().select(data_cols).collect().unwrap();
     let mut correlations = vec![vec![1.0; number_of_cols]; number_of_cols];
     for i in 0..number_of_cols {
         for j in i + 1..number_of_cols {
@@ -46,7 +48,8 @@ pub fn exercise02_06() {
     // show_plot(plots);
 
     let index_data_set = load_index_data();
-    let index_corr_data_set = data_set
+    let index_corr_data_set = stocks_data_set
+        .clone()
         .join(
             index_data_set,
             [col("Date")],
@@ -68,4 +71,31 @@ pub fn exercise02_06() {
     ) as Box<dyn Trace>;
     plots.push(plot);
     show_plot(plots);
+
+    let crypto_data_set = load_crypto_data();
+    let crypto_col_names = crypto_data_set
+        .clone()
+        .collect()
+        .unwrap()
+        .schema()
+        .iter()
+        .map(|(p, _)| p.to_string())
+        .filter(|s| s != "Date")
+        .collect::<Vec<String>>();
+    let crypto_col = crypto_col_names.choose(&mut rng).unwrap().clone();
+    let stock_col = stock_col_names.choose(&mut rng).unwrap().clone();
+    let data_set = crypto_data_set
+        .join(
+            stocks_data_set,
+            [col("Date")],
+            [col("Date")],
+            JoinArgs::new(JoinType::Inner),
+        )
+        .collect()
+        .unwrap();
+    let corr_value = cross_correlation(&data_set, &crypto_col, &stock_col);
+    println!(
+        "Cross-correlation between {} and {}: {}",
+        crypto_col, stock_col, corr_value
+    );
 }
