@@ -1,11 +1,11 @@
 use plotly::{Scatter, Trace};
 
-use super::utils::{load_data, show_plot};
+use super::utils::{load_crypto_data, show_plot};
 use plotlars::{Plot, ScatterPlot};
 use statrs::distribution::Uniform;
 
 pub fn exercise02_04() {
-    let data_set = load_data();
+    let data_set = load_crypto_data();
 
     use polars::prelude::*;
     let plot_data = data_set

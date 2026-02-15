@@ -4,12 +4,23 @@ use polars::prelude::*;
 use std::env;
 use std::{fs::File, io::Write, process::Command};
 
-pub fn load_data() -> LazyFrame {
+pub fn load_crypto_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
         PlPath::new("./cryptos_2017to2021_daily.parquet"),
         Default::default(),
     )
-    .unwrap();
+        .unwrap();
+    // let print_set = data_set.clone();
+    // println!("{:?}", print_set.first().collect().unwrap());
+    data_set
+}
+
+pub fn load_stocks_data() -> LazyFrame {
+    let data_set = LazyFrame::scan_parquet(
+        PlPath::new("./SP500_stocks_2015to2020.parquet"),
+        Default::default(),
+    )
+        .unwrap();
     // let print_set = data_set.clone();
     // println!("{:?}", print_set.first().collect().unwrap());
     data_set
@@ -57,4 +68,18 @@ pub fn auto_correlation(data: &DataFrame, column: &str, lag: i32) -> Option<f64>
         .unwrap();
     let col2 = col1.shift(lag.into());
     pearson_corr(col1.f64().unwrap(), col2.f64().unwrap())
+}
+
+pub fn cross_correlation(data: &DataFrame, column1: &str, column2: &str) -> f64 {
+    let col1 = data
+        .column(column1)
+        .unwrap()
+        .cast(&DataType::Float64)
+        .unwrap();
+    let col2 = data
+        .column(column2)
+        .unwrap()
+        .cast(&DataType::Float64)
+        .unwrap();
+    pearson_corr(col1.f64().unwrap(), col2.f64().unwrap()).unwrap()
 }

@@ -2,7 +2,8 @@
 // mod ch02_02;
 // mod ch02_03;
 // mod ch02_04;
-mod ch02_05;
+// mod ch02_05;
+mod ch02_06;
 mod utils;
 
 fn main() {
@@ -14,6 +15,8 @@ fn main() {
     // exercise02_03();
     // use crate::ch02_04::exercise02_04;
     // exercise02_04();
-    use crate::ch02_05::exercise02_05;
-    exercise02_05();
+    // use crate::ch02_05::exercise02_05;
+    // exercise02_05();
+    use crate::ch02_06::exercise02_06;
+    exercise02_06();
 }
