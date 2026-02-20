@@ -1,8 +1,8 @@
 use build_html::*;
 use plotly::Trace;
 use polars::prelude::*;
-use std::env;
-use std::{fs::File, io::Write, process::Command};
+use std::{io::Write, process::Command};
+use tempfile::NamedTempFile;
 
 pub fn load_crypto_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
@@ -56,19 +56,13 @@ pub fn show_plot(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
     }
     let html = base.to_html_string();
 
-    let mut temp = env::temp_dir();
-    temp.push("plotly.html");
-
+    let (mut file, path) = NamedTempFile::with_suffix(".html").unwrap().keep().unwrap();
     // Save the rendered plot to the temp file.
-    let temp_path = temp.to_str().unwrap();
-    {
-        let mut file = File::create(temp_path).unwrap();
-        file.write_all(html.as_bytes())
-            .expect("failed to write html output");
-        file.flush().unwrap();
-    }
+    file.write_all(html.as_bytes())
+        .expect("failed to write html output");
+    file.flush().unwrap();
     Command::new("open")
-        .args([temp_path])
+        .args([path.to_str().unwrap()])
         .output()
         .expect("DEFAULT_HTML_APP_NOT_FOUND");
 }
