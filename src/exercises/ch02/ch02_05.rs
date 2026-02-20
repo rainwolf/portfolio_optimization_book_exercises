@@ -1,7 +1,5 @@
-use super::utils::{auto_correlation, load_crypto_data, show_plot};
+use crate::utils::utils::{auto_correlation, load_crypto_data, show_plot};
 use plotly::{Scatter, Trace};
-use polars::prelude::cov::pearson_corr;
-use polars::prelude::*;
 
 pub fn exercise02_05() {
     let data_set = load_crypto_data();

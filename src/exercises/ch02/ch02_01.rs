@@ -1,9 +1,9 @@
-use super::utils::load_crypto_data;
+use crate::utils::utils;
 
-pub fn exercise02_02() {
+pub fn exercise02_01() {
     // Choose one asset and plot the price time series using both
     // a linear and a logarithmic scale. Compare the plots and comment.
-    let data_set = load_crypto_data();
+    let data_set = utils::load_crypto_data();
 
     use polars::prelude::*;
     let plot_data = data_set
@@ -13,30 +13,22 @@ pub fn exercise02_02() {
         ])
         .collect()
         .unwrap();
-    // create a returns column
-    let plot_data = plot_data
-        .lazy()
-        .with_column((col("BTC") / col("BTC").shift(1.into()) - lit(1)).alias("BTC_returns"))
-        .select([col("Date"), col("BTC_returns")])
-        .filter(col("BTC_returns").is_not_null())
-        .collect()
-        .unwrap();
 
     use plotlars::{Axis, AxisType, Plot, TimeSeriesPlot};
     TimeSeriesPlot::builder()
         .data(&plot_data)
         .x("Date")
-        .y("BTC_returns")
+        .y("BTC")
         .y_axis(&Axis::new().axis_type(AxisType::Log))
         .build()
         .plot();
     TimeSeriesPlot::builder()
         .data(&plot_data)
         .x("Date")
-        .y("BTC_returns")
+        .y("BTC")
         .y_axis(&Axis::new().axis_type(AxisType::Linear))
         .build()
         .plot();
 
-    // returns are much more erratic in log scale
+    // small differences are more pronounced in log scale
 }

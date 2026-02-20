@@ -1,6 +1,6 @@
 use plotlars::PlotHelper;
 
-use super::utils::load_crypto_data;
+use crate::utils::utils::load_crypto_data;
 
 pub fn exercise02_03() {
     // Choose one asset and plot the price time series using both

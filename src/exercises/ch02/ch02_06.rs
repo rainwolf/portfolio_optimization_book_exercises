@@ -1,9 +1,9 @@
-use super::utils::{
+use crate::utils::utils::{
     cross_correlation, load_crypto_data, load_index_data, load_stocks_data, show_plot,
 };
 use plotly::{HeatMap, Trace};
 use polars::prelude::*;
-use rand::seq::{IndexedRandom, index};
+use rand::seq::IndexedRandom;
 
 pub fn exercise02_06() {
     let stocks_data_set = load_stocks_data();
@@ -31,7 +31,7 @@ pub fn exercise02_06() {
         .map(|s| col(s.to_string()))
         .collect::<Vec<Expr>>();
 
-    let mut corr_data_set = stocks_data_set.clone().select(data_cols).collect().unwrap();
+    let corr_data_set = stocks_data_set.clone().select(data_cols).collect().unwrap();
     let mut correlations = vec![vec![1.0; number_of_cols]; number_of_cols];
     for i in 0..number_of_cols {
         for j in i + 1..number_of_cols {

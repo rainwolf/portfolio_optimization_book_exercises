@@ -1,8 +1,6 @@
-use plotly::{Scatter, Trace};
+use plotly::Trace;
 
-use super::utils::{load_crypto_data, show_plot};
-use plotlars::{Plot, ScatterPlot};
-use statrs::distribution::Uniform;
+use crate::utils::utils::{load_crypto_data, show_plot};
 
 pub fn exercise02_04() {
     let data_set = load_crypto_data();
@@ -80,7 +78,7 @@ pub fn exercise02_04() {
                         });
                         Ok(Series::from_iter(result).into())
                     },
-                    |schema, field| Ok(field.clone()),
+                    |_schema, field| Ok(field.clone()),
                 )
                 .alias("normal_quantiles"),
         )
@@ -96,7 +94,7 @@ pub fn exercise02_04() {
                         });
                         Ok(Series::from_iter(result).into())
                     },
-                    |schema, field| Ok(field.clone()),
+                    |_schema, field| Ok(field.clone()),
                 )
                 .alias("uniform_quantiles"),
         )
