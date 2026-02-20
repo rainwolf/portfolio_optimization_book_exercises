@@ -37,11 +37,14 @@ pub fn load_index_data() -> LazyFrame {
     data_set
 }
 
-pub fn show_plot(traces: Vec<Box<dyn Trace>>) {
+pub fn show_plot(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
     let mut base = HtmlPage::new()
-        .with_title("Plotly-rs Multiple Plots")
+        .with_title(title.unwrap_or("Plotly-rs Multiple Plots"))
         .with_script_link("https://cdn.plot.ly/plotly-latest.min.js")
-        .with_header(1, "Multiple Plotly plots on the same HTML page");
+        .with_header(
+            1,
+            title.unwrap_or("Multiple Plotly plots on the same HTML page"),
+        );
     use plotly::Plot;
     for (i, trace) in traces.iter().enumerate() {
         let mut plot = Plot::new();

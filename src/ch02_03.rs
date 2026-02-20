@@ -57,19 +57,6 @@ pub fn exercise02_03() {
         .unwrap();
 
     use plotlars::{Plot, SubplotGrid, TimeSeriesPlot};
-    // TimeSeriesPlot::builder()
-    //     .data(&plot_data)
-    //     .x("Date")
-    //     .y("volatility_not_centered")
-    //     .build()
-    //     .plot();
-    // TimeSeriesPlot::builder()
-    //     .data(&plot_data)
-    //     .x("Date")
-    //     .y("volatility_centered")
-    //     .build()
-    //     .plot();
-
     // centered or not draws a translated picture
 
     let k_s = vec![3, 9, 30, 90];

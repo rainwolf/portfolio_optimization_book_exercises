@@ -66,5 +66,8 @@ pub fn exercise02_05() {
     let auto_corr_plot = Scatter::new(lags.clone().map(|x| x as f64).collect(), auto_corrs)
         .mode(plotly::common::Mode::Lines) as Box<dyn Trace>;
     plots.push(auto_corr_plot);
-    show_plot(plots);
+    show_plot(
+        plots,
+        Some("Auto-correlation of BTC Log Returns and Squared Returns"),
+    );
 }

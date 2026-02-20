@@ -70,7 +70,7 @@ pub fn exercise02_06() {
         vec![index_correlations],
     ) as Box<dyn Trace>;
     plots.push(plot);
-    show_plot(plots);
+    show_plot(plots, Some("Correlation Heatmap"));
 
     let crypto_data_set = load_crypto_data();
     let crypto_col_names = crypto_data_set

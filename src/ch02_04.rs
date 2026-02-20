@@ -141,7 +141,7 @@ pub fn exercise02_04() {
     .name("Q-Q Plot") as Box<dyn Trace>;
     plots.push(normal_qq);
     plots.push(uniform_qq);
-    show_plot(plots);
+    show_plot(plots, Some("Q-Q Plots of BTC Log Returns"));
     // println!("{:?}", qq_plot_data);
     // log returns seem uniformly distributed, not Gaussian
 
