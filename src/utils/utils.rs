@@ -6,7 +6,7 @@ use tempfile::NamedTempFile;
 
 pub fn load_crypto_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
-        PlPath::new("./cryptos_2017to2021_daily.parquet"),
+        PlRefPath::new("./cryptos_2017to2021_daily.parquet"),
         Default::default(),
     )
     .unwrap();
@@ -17,7 +17,7 @@ pub fn load_crypto_data() -> LazyFrame {
 
 pub fn load_stocks_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
-        PlPath::new("./SP500_stocks_2015to2020.parquet"),
+        PlRefPath::new("./SP500_stocks_2015to2020.parquet"),
         Default::default(),
     )
     .unwrap();
@@ -28,7 +28,7 @@ pub fn load_stocks_data() -> LazyFrame {
 
 pub fn load_index_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
-        PlPath::new("./SP500_index_2015to2020.parquet"),
+        PlRefPath::new("./SP500_index_2015to2020.parquet"),
         Default::default(),
     )
     .unwrap();

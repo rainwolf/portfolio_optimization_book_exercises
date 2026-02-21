@@ -12,7 +12,8 @@ pub fn exercise02_01() {
             col("BTC"),
         ])
         .collect()
-        .unwrap();
+        .unwrap()
+        .into();
 
     use plotlars::{Axis, AxisType, Plot, TimeSeriesPlot};
     TimeSeriesPlot::builder()

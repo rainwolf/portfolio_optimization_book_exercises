@@ -20,7 +20,8 @@ pub fn exercise02_02() {
         .select([col("Date"), col("BTC_returns")])
         .filter(col("BTC_returns").is_not_null())
         .collect()
-        .unwrap();
+        .unwrap()
+        .into();
 
     use plotlars::{Axis, AxisType, Plot, TimeSeriesPlot};
     TimeSeriesPlot::builder()
