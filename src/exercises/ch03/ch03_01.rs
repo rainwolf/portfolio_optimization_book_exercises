@@ -57,5 +57,32 @@ pub fn exercise03_01() {
     );
     println!("Sample mean: {plot_data_mean}, Sample standard deviation: {plot_data_std}");
 
+    let number_of_iid_vars = (10..=100).step_by(10);
+    let mse = number_of_iid_vars
+        .clone()
+        .map(|iid_vars_number| {
+            let means = (0..number_of_experiments)
+                .map(|_| {
+                    Series::from_iter((0..iid_vars_number).map(|_| n.sample(&mut rng)))
+                        .mean()
+                        .unwrap()
+                })
+                .map(|mean| (mean - true_mean).powi(2));
+            Series::from_iter(means).mean().unwrap()
+        })
+        .collect::<Vec<f64>>();
+    let plot = Scatter::new(
+        number_of_iid_vars.clone().map(|x| x as f64).collect(),
+        mse.clone(),
+    ) as Box<dyn plotly::Trace>;
+    plots.push(plot);
+    let plot = Scatter::new(
+        number_of_iid_vars.clone().map(|x| x as f64).collect(),
+        number_of_iid_vars
+            .clone()
+            .map(|x| true_std / (x as f64))
+            .collect(),
+    ) as Box<dyn plotly::Trace>;
+    plots.push(plot);
     show_plot(plots, None);
 }
