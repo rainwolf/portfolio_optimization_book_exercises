@@ -4,10 +4,19 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-polars = { version = "0.53.0", features = ["lazy", "parquet", "temporal", "rolling_window", "log", "moment", "cov", "timezones"] }
+polars = { version = "0.53.0", features = [
+    "lazy",
+    "parquet",
+    "temporal",
+    "rolling_window",
+    "log",
+    "moment",
+    "cov",
+    "timezones",
+] }
 plotlars = "0.11.4"
 plotly = "0.14.0"
 build_html = "2.7.0"
-statrs = "0.18.0"
-rand = "0.10.0"
+statrs = { version = "0.18.0", features = ["rand"] }
 tempfile = "3.25.0"
+rand = { version = "0.8", features = ["std", "std_rng", "small_rng"] }
