@@ -29,4 +29,7 @@ pub fn exercise03_02() {
         "        E [ (X_1 - μ)(X_1 - μ)^t + ... + (X_T - μ)(X_T - μ)^t ] - T * E [ (μ - X̄)(μ - X̄)^t ]   // replace X̄ with its definition and use the fact that E [ X_i - μ ] = 0 or that the X_i's are independent and identically distributed"
     );
     println!("        T * Σ - T * Σ / T = (T - 1) * Σ  // the sample covariance matrix is biased");
+    println!(
+        "2c) Use 1/T when estimating with the true mean, and 1/(T-1) when estimating with the sample mean."
+    );
 }
