@@ -1,4 +1,5 @@
 pub fn exercise03_02() {
+    println!("\x1B[2J"); // clear the terminal
     println!();
     println!(
         "2a) The expected value of the sum of T iid normal random variables with mean μ and covariance matrix Σ minus a vector of true means, multiplied by the same transposed."
@@ -32,4 +33,5 @@ pub fn exercise03_02() {
     println!(
         "2c) Use 1/T when estimating with the true mean, and 1/(T-1) when estimating with the sample mean."
     );
+    println!();
 }
