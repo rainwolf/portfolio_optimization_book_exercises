@@ -1,6 +1,5 @@
 use plotly::Histogram;
 use plotly::Scatter;
-use plotly::plot;
 use polars::prelude::*;
 use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
