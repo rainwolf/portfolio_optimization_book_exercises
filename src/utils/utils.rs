@@ -91,3 +91,85 @@ pub fn cross_correlation(data: &DataFrame, column1: &str, column2: &str) -> f64 
         .unwrap();
     pearson_corr(col1.f64().unwrap(), col2.f64().unwrap()).unwrap()
 }
+
+pub fn mean_of_d_dimensional_samples(samples: &Vec<Vec<f64>>) -> Vec<f64> {
+    let d = samples[0].len();
+    (0..d)
+        .map(|i| {
+            Series::from_iter(samples.iter().map(|sample| sample[i]))
+                .mean()
+                .unwrap()
+        })
+        .collect::<Vec<f64>>()
+}
+
+pub fn element_wise_median_of_n_dimensional_samples(samples: &Vec<Vec<f64>>) -> Vec<f64> {
+    let d = samples[0].len();
+    (0..d)
+        .map(|i| {
+            Series::from_iter(samples.iter().map(|sample| sample[i]))
+                .median()
+                .unwrap()
+        })
+        .collect::<Vec<f64>>()
+}
+
+pub fn weiszfeld_geometric_median(points: &Vec<Vec<f64>>, max_iterations: usize) -> Vec<f64> {
+    let d = points[0].len();
+    let points_as_series: Vec<Series> = points
+        .iter()
+        .map(|point| Series::from_iter(point.iter()))
+        .collect();
+    // mean as initial value for iteration
+    let mut median: Series = points_as_series
+        .iter()
+        .fold(Series::from_iter(vec![0.0; d]), |acc, x| {
+            (&acc + x).unwrap()
+        })
+        / (points.len() as f64);
+
+    for _ in 0..max_iterations {
+        let distances_to_median: Vec<f64> = points_as_series
+            .iter()
+            .map(|point| {
+                let difference = (point - &median).unwrap();
+                (&difference * &difference)
+                    .unwrap()
+                    .f64()
+                    .unwrap()
+                    .iter()
+                    .flatten()
+                    .sum::<f64>()
+                    .sqrt()
+            })
+            .collect();
+        let numerator: Series = points_as_series
+            .iter()
+            .zip(&distances_to_median)
+            .map(|(x, y)| x / *y)
+            .fold(Series::from_iter(vec![0.0; d]), |acc, x| (acc + x).unwrap());
+        let denominator = distances_to_median
+            .iter()
+            .map(|&distance| 1.0 / distance)
+            .sum::<f64>();
+        let new_median = &numerator / denominator;
+        let difference_to_previous_median = &(&median - &new_median).unwrap();
+        let distance_to_previous_median = (difference_to_previous_median
+            * difference_to_previous_median)
+            .unwrap()
+            .sum::<f64>()
+            .unwrap()
+            .sqrt();
+        if distance_to_previous_median > 1e-10 {
+            median = new_median;
+        } else {
+            break;
+        }
+    }
+    median
+        .f64()
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<f64>>()
+}
