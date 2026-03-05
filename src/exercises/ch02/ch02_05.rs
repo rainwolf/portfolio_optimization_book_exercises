@@ -1,4 +1,4 @@
-use crate::utils::utils::{auto_correlation, load_crypto_data, show_plot};
+use crate::utils::utils::{auto_correlation, load_crypto_data, show_plot_traces};
 use plotly::{Scatter, Trace};
 
 pub fn exercise02_05() {
@@ -64,7 +64,7 @@ pub fn exercise02_05() {
     let auto_corr_plot = Scatter::new(lags.clone().map(|x| x as f64).collect(), auto_corrs)
         .mode(plotly::common::Mode::Lines) as Box<dyn Trace>;
     plots.push(auto_corr_plot);
-    show_plot(
+    show_plot_traces(
         plots,
         Some("Auto-correlation of BTC Log Returns and Squared Returns"),
     );

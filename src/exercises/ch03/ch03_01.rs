@@ -4,7 +4,7 @@ use polars::prelude::*;
 use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
 
-use crate::utils::utils::show_plot;
+use crate::utils::utils::show_plot_traces;
 
 pub fn exercise03_01() {
     use statrs::distribution::Normal;
@@ -83,5 +83,5 @@ pub fn exercise03_01() {
             .collect(),
     ) as Box<dyn plotly::Trace>;
     plots.push(plot);
-    show_plot(plots, None);
+    show_plot_traces(plots, None);
 }

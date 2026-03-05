@@ -1,5 +1,5 @@
 use build_html::*;
-use plotly::Trace;
+use plotly::{Plot, Trace};
 use polars::prelude::*;
 use std::{io::Write, process::Command};
 use tempfile::NamedTempFile;
@@ -37,7 +37,7 @@ pub fn load_index_data() -> LazyFrame {
     data_set
 }
 
-pub fn show_plot(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
+pub fn show_plot_traces(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
     let mut base = HtmlPage::new()
         .with_title(title.unwrap_or("Plotly-rs Multiple Plots"))
         .with_script_link("https://cdn.plot.ly/plotly-latest.min.js")
@@ -59,6 +59,32 @@ pub fn show_plot(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
     let (mut file, path) = NamedTempFile::with_suffix(".html").unwrap().keep().unwrap();
     // Save the rendered plot to the temp file.
     file.write_all(html.as_bytes())
+        .expect("failed to write html output");
+    file.flush().unwrap();
+    Command::new("open")
+        .args([path.to_str().unwrap()])
+        .output()
+        .expect("DEFAULT_HTML_APP_NOT_FOUND");
+}
+
+pub fn show_plotly_plots(plots: Vec<Plot>, title: Option<&str>) {
+    let mut base = HtmlPage::new()
+        .with_title(title.unwrap_or("Plotly-rs Multiple Plots"))
+        .with_script_link("https://cdn.plot.ly/plotly-latest.min.js")
+        .with_header(
+            1,
+            title.unwrap_or("Multiple Plotly plots on the same HTML page"),
+        );
+    for (i, plot) in plots.iter().enumerate() {
+        base.add_raw(
+            plot.to_inline_html(Some(format!("test_{}", i).as_str()))
+                .as_str(),
+        );
+    }
+
+    let (mut file, path) = NamedTempFile::with_suffix(".html").unwrap().keep().unwrap();
+    // Save the rendered plot to the temp file.
+    file.write_all(base.to_html_string().as_bytes())
         .expect("failed to write html output");
     file.flush().unwrap();
     Command::new("open")

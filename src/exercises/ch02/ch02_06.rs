@@ -1,5 +1,5 @@
 use crate::utils::utils::{
-    cross_correlation, load_crypto_data, load_index_data, load_stocks_data, show_plot,
+    cross_correlation, load_crypto_data, load_index_data, load_stocks_data, show_plot_traces,
 };
 use plotly::{HeatMap, Trace};
 use polars::prelude::*;
@@ -45,7 +45,7 @@ pub fn exercise02_06() {
     let plot =
         HeatMap::new(random_cols.clone(), random_cols.clone(), correlations) as Box<dyn Trace>;
     let mut plots = vec![plot];
-    // show_plot(plots);
+    // show_plot_traces(plots);
 
     let index_data_set = load_index_data();
     let index_corr_data_set = stocks_data_set
@@ -70,7 +70,7 @@ pub fn exercise02_06() {
         vec![index_correlations],
     ) as Box<dyn Trace>;
     plots.push(plot);
-    show_plot(plots, Some("Correlation Heatmap"));
+    show_plot_traces(plots, Some("Correlation Heatmap"));
 
     let crypto_data_set = load_crypto_data();
     let crypto_col_names = crypto_data_set

@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub fn main() {
     use crate::exercises::ch02::ch02_01::exercise02_01;
     exercise02_01();

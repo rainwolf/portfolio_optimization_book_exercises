@@ -1,6 +1,6 @@
 use plotly::Trace;
 
-use crate::utils::utils::{load_crypto_data, show_plot};
+use crate::utils::utils::{load_crypto_data, show_plot_traces};
 
 pub fn exercise02_04() {
     let data_set = load_crypto_data();
@@ -51,7 +51,7 @@ pub fn exercise02_04() {
             .n_bins_x(b) as Box<dyn Trace>
         })
         .collect::<Vec<Box<dyn Trace>>>();
-    // show_plot(plots);
+    // show_plot_traces(plots);
     // bins becomes smaller -> histogram becomes smoother
 
     // Draw Q–Q plots to focus on the tail distribution. Do the returns follow a Gaussian distribution?
@@ -139,7 +139,7 @@ pub fn exercise02_04() {
     .name("Q-Q Plot") as Box<dyn Trace>;
     plots.push(normal_qq);
     plots.push(uniform_qq);
-    show_plot(plots, Some("Q-Q Plots of BTC Log Returns"));
+    show_plot_traces(plots, Some("Q-Q Plots of BTC Log Returns"));
     // println!("{:?}", qq_plot_data);
     // log returns seem uniformly distributed, not Gaussian
 
