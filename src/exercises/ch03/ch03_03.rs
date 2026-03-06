@@ -7,8 +7,6 @@ use plotly::Scatter;
 use plotly::Trace;
 use plotly::color::NamedColor;
 use plotly::common::Mode;
-use polars::prelude::Series;
-use polars::prelude::*;
 use rand::distributions::Distribution;
 use rand::prelude::SmallRng;
 
@@ -88,7 +86,6 @@ pub fn exercise03_03() {
 
     let true_mean_point = vec![true_mean; d];
 
-    let number_of_experiments = 1000;
     let data = (10..=100)
         .step_by(10)
         .map(|number_of_iid_vars| {

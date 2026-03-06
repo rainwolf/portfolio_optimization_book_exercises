@@ -202,14 +202,19 @@ pub fn weiszfeld_geometric_median(points: &Vec<Vec<f64>>, max_iterations: usize)
 }
 
 pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
+    let estimator_series = Series::from_iter(estimator.iter());
     data.iter()
         .map(|point| {
-            let difference = point
+            let point_series = Series::from_iter(point.iter());
+            let difference = (&point_series - &estimator_series).unwrap();
+            (&difference * &difference)
+                .unwrap()
+                .f64()
+                .unwrap()
                 .iter()
-                .zip(estimator.iter())
-                .map(|(x, e)| (x - e).powi(2))
-                .sum::<f64>();
-            difference.sqrt()
+                .flatten()
+                .sum::<f64>()
+                .sqrt()
         })
         .mean()
 }
