@@ -1,6 +1,7 @@
 use build_html::*;
 use plotly::{Plot, Trace};
 use polars::prelude::*;
+use statrs::statistics::Statistics;
 use std::{io::Write, process::Command};
 use tempfile::NamedTempFile;
 
@@ -198,4 +199,17 @@ pub fn weiszfeld_geometric_median(points: &Vec<Vec<f64>>, max_iterations: usize)
         .into_iter()
         .flatten()
         .collect::<Vec<f64>>()
+}
+
+pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
+    data.iter()
+        .map(|point| {
+            let difference = point
+                .iter()
+                .zip(estimator.iter())
+                .map(|(x, e)| (x - e).powi(2))
+                .sum::<f64>();
+            difference.sqrt()
+        })
+        .mean()
 }

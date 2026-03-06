@@ -1,6 +1,6 @@
 use crate::utils::utils::{
-    element_wise_median_of_n_dimensional_samples, mean_of_d_dimensional_samples, show_plotly_plots,
-    weiszfeld_geometric_median,
+    element_wise_median_of_n_dimensional_samples, mean_of_d_dimensional_samples, mse_to_data,
+    show_plotly_plots, weiszfeld_geometric_median,
 };
 use plotly::Plot;
 use plotly::Scatter;
@@ -87,19 +87,7 @@ pub fn exercise03_03() {
     let mut plots = vec![plot];
 
     let true_mean_point = vec![true_mean; d];
-    use statrs::statistics::Statistics;
-    fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
-        data.iter()
-            .map(|point| {
-                let difference = point
-                    .iter()
-                    .zip(estimator.iter())
-                    .map(|(x, e)| (x - e).powi(2))
-                    .sum::<f64>();
-                difference.sqrt()
-            })
-            .mean()
-    }
+
     let number_of_experiments = 1000;
     let data = (10..=100)
         .step_by(10)
