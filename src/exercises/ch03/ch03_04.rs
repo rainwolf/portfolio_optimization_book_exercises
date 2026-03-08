@@ -80,9 +80,13 @@ pub fn exercise03_04() {
                 .symbol(plotly::common::MarkerSymbol::X),
         ) as Box<dyn Trace>;
     plot.add_trace(true_mean_scatter);
+    plot.set_layout(
+        plotly::Layout::new()
+            .title("Mean, Median, and Geometric Median of 20 IID Normal Random Variables"),
+    );
 
     let mut plots = vec![plot];
-    show_plotly_plots(plots, None);
+    show_plotly_plots(plots, Some("exercise03_04"));
 
     let number_of_experiments = 1000;
     let data = &(0..number_of_experiments)
