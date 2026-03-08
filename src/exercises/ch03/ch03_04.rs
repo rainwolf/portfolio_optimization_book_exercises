@@ -86,7 +86,6 @@ pub fn exercise03_04() {
     );
 
     let mut plots = vec![plot];
-    show_plotly_plots(plots, Some("exercise03_04"));
 
     let number_of_experiments = 1000;
     let data = &(0..number_of_experiments)
@@ -113,4 +112,110 @@ pub fn exercise03_04() {
     println!("Mean MSE: {}", mean_mse);
     println!("Median MSE: {}", median_mse);
     println!("Geometric Median MSE: {}", geometric_median_mse);
+
+    let outlier_mean = 0.1;
+    let outlier_std = 1.0;
+    let outlier_n = Normal::new(outlier_mean, outlier_std).unwrap();
+
+    use polars::prelude::Series;
+    fn generate_d_dimensional_n_normal_samples_with_percentage_outlier(
+        n: &Normal,
+        outlier_n: &Normal,
+        rng: &mut SmallRng,
+        d: usize,
+        number_of_iid_vars: usize,
+        percentage_outlier: f64,
+    ) -> Vec<Vec<f64>> {
+        let mut normal_data = (0..number_of_iid_vars)
+            .map(|_| (0..d).map(|_| n.sample(rng)).collect::<Vec<f64>>())
+            .collect::<Vec<Vec<f64>>>();
+        let number_of_outliers =
+            ((number_of_iid_vars as f64) * percentage_outlier).round() as usize;
+        let outliers = (0..number_of_outliers)
+            .map(|_| Series::from_iter((0..d).map(|_| outlier_n.sample(rng))))
+            .collect::<Vec<Series>>();
+        for i in 0..number_of_outliers {
+            let data_series = Series::from_iter(normal_data[i].iter());
+            normal_data[i] = (&data_series + &outliers[i])
+                .unwrap()
+                .f64()
+                .unwrap()
+                .iter()
+                .flatten()
+                .collect::<Vec<f64>>();
+        }
+        normal_data
+    }
+
+    let true_mean_point = vec![true_mean; d];
+
+    let data = (0..=100)
+        .step_by(5)
+        .map(|percentage| {
+            let data = (0..number_of_experiments)
+                .map(|_| {
+                    generate_d_dimensional_n_normal_samples_with_percentage_outlier(
+                        &n,
+                        &outlier_n,
+                        &mut rng,
+                        d,
+                        number_of_iid_vars,
+                        percentage as f64 / 100.0,
+                    )
+                })
+                .collect::<Vec<Vec<Vec<f64>>>>();
+            let means = data
+                .iter()
+                .map(|experiment_data| mean_of_d_dimensional_samples(experiment_data))
+                .collect::<Vec<Vec<f64>>>();
+            let medians = data
+                .iter()
+                .map(|experiment_data| {
+                    element_wise_median_of_n_dimensional_samples(experiment_data)
+                })
+                .collect::<Vec<Vec<f64>>>();
+            let geometric_medians = data
+                .iter()
+                .map(|experiment_data| weiszfeld_geometric_median(experiment_data, 100))
+                .collect::<Vec<Vec<f64>>>();
+            (
+                percentage,
+                mse_to_data(&means, &true_mean_point),
+                mse_to_data(&medians, &true_mean_point),
+                mse_to_data(&geometric_medians, &true_mean_point),
+            )
+        })
+        .collect::<Vec<(usize, f64, f64, f64)>>();
+
+    let mut plot = Plot::new();
+    let mean_trace = Scatter::new(
+        data.iter()
+            .map(|(n, _, _, _)| *n as f64)
+            .collect::<Vec<f64>>(),
+        data.iter().map(|(_, mse, _, _)| *mse).collect::<Vec<f64>>(),
+    )
+    .mode(Mode::LinesMarkers)
+    .name("Mean") as Box<dyn Trace>;
+    plot.add_trace(mean_trace);
+    let median_trace = Scatter::new(
+        data.iter()
+            .map(|(n, _, _, _)| *n as f64)
+            .collect::<Vec<f64>>(),
+        data.iter().map(|(_, _, mse, _)| *mse).collect::<Vec<f64>>(),
+    )
+    .mode(Mode::LinesMarkers)
+    .name("Median") as Box<dyn Trace>;
+    plot.add_trace(median_trace);
+    let geometric_median_trace = Scatter::new(
+        data.iter()
+            .map(|(n, _, _, _)| *n as f64)
+            .collect::<Vec<f64>>(),
+        data.iter().map(|(_, _, _, mse)| *mse).collect::<Vec<f64>>(),
+    )
+    .mode(Mode::LinesMarkers)
+    .name("Geometric Median") as Box<dyn Trace>;
+    plot.add_trace(geometric_median_trace);
+
+    plots.push(plot);
+    show_plotly_plots(plots, Some("exercise03_04"));
 }
