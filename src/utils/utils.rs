@@ -214,7 +214,6 @@ pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
                 .iter()
                 .flatten()
                 .sum::<f64>()
-                .sqrt()
         })
         .mean()
 }
