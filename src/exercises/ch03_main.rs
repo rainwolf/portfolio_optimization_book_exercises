@@ -5,6 +5,8 @@ pub fn main() {
     // exercise03_02();
     // use crate::exercises::ch03::ch03_03::exercise03_03;
     // exercise03_03();
-    use crate::exercises::ch03::ch03_04::exercise03_04;
-    exercise03_04();
+    // use crate::exercises::ch03::ch03_04::exercise03_04;
+    // exercise03_04();
+    use crate::exercises::ch03::ch03_05::exercise03_05;
+    exercise03_05();
 }
