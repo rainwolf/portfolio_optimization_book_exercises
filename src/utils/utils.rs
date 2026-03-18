@@ -1,6 +1,9 @@
 use build_html::*;
 use plotly::{Plot, Trace};
 use polars::prelude::*;
+use rand::distributions::Distribution;
+use rand::prelude::SmallRng;
+use statrs::distribution::Normal;
 use statrs::statistics::Statistics;
 use std::{io::Write, process::Command};
 use tempfile::NamedTempFile;
@@ -216,4 +219,15 @@ pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
                 .sum::<f64>()
         })
         .mean()
+}
+
+pub fn generate_d_dimensional_normal_samples(
+    n: &Normal,
+    d: usize,
+    number_of_iid_vars: usize,
+) -> Vec<Vec<f64>> {
+    let mut rng: SmallRng = rand::SeedableRng::from_entropy();
+    (0..number_of_iid_vars)
+        .map(|_| (0..d).map(|_| n.sample(&mut rng)).collect::<Vec<f64>>())
+        .collect::<Vec<Vec<f64>>>()
 }
