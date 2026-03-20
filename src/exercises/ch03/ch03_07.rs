@@ -1,4 +1,4 @@
-use crate::utils::utils::generate_d_dimensional_normal_samples;
+use crate::utils::utils::generate_d_dimensional_samples;
 use statrs::distribution::Normal;
 
 pub fn exercise03_07() {
@@ -11,8 +11,8 @@ pub fn exercise03_07() {
     let d = 10;
     let number_of_iid_vars = 50;
     let number_of_experiments = 1000;
-    let data = generate_d_dimensional_normal_samples(&n, d, number_of_iid_vars);
-    fn estimate_covariance_matrix_gaussian_ml_estimator(data: &Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+    let data = generate_d_dimensional_samples(&n, d, number_of_iid_vars);
+    fn estimate_covariance_matrix_gaussian_ml_estimator(data: &[Vec<f64>]) -> Vec<Vec<f64>> {
         let d = data[0].len();
         let mut covariance_matrix = vec![vec![0.0; d]; d];
         for i in 0..d {
@@ -26,8 +26,8 @@ pub fn exercise03_07() {
         covariance_matrix
     }
     fn covariance_matrix_mse_to_true_covariance_matrix(
-        covariance_matrix: &Vec<Vec<f64>>,
-        true_covariance_matrix: &Vec<Vec<f64>>,
+        covariance_matrix: &[Vec<f64>],
+        true_covariance_matrix: &[Vec<f64>],
     ) -> f64 {
         covariance_matrix
             .iter()

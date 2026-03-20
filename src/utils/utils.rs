@@ -3,7 +3,6 @@ use plotly::{Plot, Trace};
 use polars::prelude::*;
 use rand::distributions::Distribution;
 use rand::prelude::SmallRng;
-use statrs::distribution::Normal;
 use statrs::statistics::Statistics;
 use std::{io::Write, process::Command};
 use tempfile::NamedTempFile;
@@ -122,7 +121,7 @@ pub fn cross_correlation(data: &DataFrame, column1: &str, column2: &str) -> f64 
     pearson_corr(col1.f64().unwrap(), col2.f64().unwrap()).unwrap()
 }
 
-pub fn mean_of_d_dimensional_samples(samples: &Vec<Vec<f64>>) -> Vec<f64> {
+pub fn mean_of_d_dimensional_samples(samples: &[Vec<f64>]) -> Vec<f64> {
     let d = samples[0].len();
     (0..d)
         .map(|i| {
@@ -133,7 +132,7 @@ pub fn mean_of_d_dimensional_samples(samples: &Vec<Vec<f64>>) -> Vec<f64> {
         .collect::<Vec<f64>>()
 }
 
-pub fn element_wise_median_of_n_dimensional_samples(samples: &Vec<Vec<f64>>) -> Vec<f64> {
+pub fn element_wise_median_of_n_dimensional_samples(samples: &[Vec<f64>]) -> Vec<f64> {
     let d = samples[0].len();
     (0..d)
         .map(|i| {
@@ -144,7 +143,7 @@ pub fn element_wise_median_of_n_dimensional_samples(samples: &Vec<Vec<f64>>) -> 
         .collect::<Vec<f64>>()
 }
 
-pub fn weiszfeld_geometric_median(points: &Vec<Vec<f64>>, max_iterations: usize) -> Vec<f64> {
+pub fn weiszfeld_geometric_median(points: &[Vec<f64>], max_iterations: usize) -> Vec<f64> {
     let d = points[0].len();
     let points_as_series: Vec<Series> = points
         .iter()
@@ -204,7 +203,7 @@ pub fn weiszfeld_geometric_median(points: &Vec<Vec<f64>>, max_iterations: usize)
         .collect::<Vec<f64>>()
 }
 
-pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
+pub fn mse_to_data(data: &[Vec<f64>], estimator: &[f64]) -> f64 {
     let estimator_series = Series::from_iter(estimator.iter());
     data.iter()
         .map(|point| {
@@ -221,13 +220,20 @@ pub fn mse_to_data(data: &Vec<Vec<f64>>, estimator: &Vec<f64>) -> f64 {
         .mean()
 }
 
-pub fn generate_d_dimensional_normal_samples(
-    n: &Normal,
-    d: usize,
+pub fn generate_d_dimensional_samples<T>(
+    distribution: &T,
+    dimension: usize,
     number_of_iid_vars: usize,
-) -> Vec<Vec<f64>> {
+) -> Vec<Vec<f64>>
+where
+    T: Distribution<f64>,
+{
     let mut rng: SmallRng = rand::SeedableRng::from_entropy();
     (0..number_of_iid_vars)
-        .map(|_| (0..d).map(|_| n.sample(&mut rng)).collect::<Vec<f64>>())
+        .map(|_| {
+            (0..dimension)
+                .map(|_| distribution.sample(&mut rng))
+                .collect::<Vec<f64>>()
+        })
         .collect::<Vec<Vec<f64>>>()
 }
