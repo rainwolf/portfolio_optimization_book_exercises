@@ -20,3 +20,7 @@ build_html = "2.7.0"
 statrs = { version = "0.18.0", features = ["rand"] }
 tempfile = "3.25.0"
 rand = { version = "0.8", features = ["std", "std_rng", "small_rng"] }
+faer = "0.24.0"
+argmin = "0.11.0"
+argmin-math = { version = "0.5", features = ["vec"] }
+argmin-observer-slog = "0.2.0"

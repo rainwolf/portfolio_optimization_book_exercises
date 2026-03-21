@@ -1,4 +1,6 @@
+use crate::utils::student_t_mle::estimate_covariance_matrix_student_t_ml_estimator;
 use crate::utils::utils::generate_d_dimensional_samples;
+use faer::Mat;
 use statrs::distribution::{Normal, StudentsT};
 
 pub fn exercise03_07() {
@@ -52,10 +54,30 @@ pub fn exercise03_07() {
         &covariance_matrix_gaussian_ml_estimator,
         &true_variance_matrix,
     );
-    println!(
-        "Gaussian ML Estimator MSE for Gaussian data: {}",
-        mse_gaussian_ml_estimator
-    );
+    let covariance_matrix_student_t_ml_estimator_for_gaussian_data =
+        estimate_covariance_matrix_student_t_ml_estimator(&data);
+    fn covariance_matrix_mse_to_true_covariance_vec_of_vec(
+        covariance_matrix: &Mat<f64>,
+        true_covariance_matrix: &[Vec<f64>],
+    ) -> f64 {
+        covariance_matrix
+            .row_iter()
+            .zip(true_covariance_matrix)
+            .map(|(row_estimated, row_true)| {
+                row_estimated
+                    .iter()
+                    .zip(row_true)
+                    .map(|(&estimated, &true_value)| (estimated - true_value).powi(2))
+                    .sum::<f64>()
+            })
+            .sum::<f64>()
+            / (true_covariance_matrix.len() * true_covariance_matrix[0].len()) as f64
+    }
+    let mse_student_t_ml_estimator_for_gaussian_data =
+        covariance_matrix_mse_to_true_covariance_vec_of_vec(
+            &covariance_matrix_student_t_ml_estimator_for_gaussian_data,
+            &true_variance_matrix,
+        );
 
     let t = StudentsT::new(0.0, 1.0, 5.0).unwrap();
     let data_heavy_tailed = generate_d_dimensional_samples(&t, d, number_of_iid_vars);
@@ -65,8 +87,27 @@ pub fn exercise03_07() {
         &covariance_matrix_gaussian_ml_estimator_for_heavy_tailed_data,
         &true_variance_matrix,
     );
+    let covariance_matrix_student_t_ml_estimator_for_heavy_tailed_data =
+        estimate_covariance_matrix_student_t_ml_estimator(&data_heavy_tailed);
+    let mse_student_t_ml_estimator_for_heavy_tailed_data =
+        covariance_matrix_mse_to_true_covariance_vec_of_vec(
+            &covariance_matrix_student_t_ml_estimator_for_heavy_tailed_data,
+            &true_variance_matrix,
+        );
+    println!(
+        "Gaussian ML Estimator MSE for Gaussian data: {}",
+        mse_gaussian_ml_estimator
+    );
+    println!(
+        "Student T ML Estimator MSE for Gaussian data: {}",
+        mse_student_t_ml_estimator_for_gaussian_data
+    );
     println!(
         "Gaussian ML Estimator MSE for heavy-tailed data: {}",
         mse_heavy_tailed_ml_estimator
+    );
+    println!(
+        "Student T ML Estimator MSE for heavy-tailed data: {}",
+        mse_student_t_ml_estimator_for_heavy_tailed_data
     );
 }
