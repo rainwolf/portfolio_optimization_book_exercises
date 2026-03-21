@@ -52,18 +52,21 @@ pub fn exercise03_07() {
         &covariance_matrix_gaussian_ml_estimator,
         &true_variance_matrix,
     );
-    println!("Gaussian ML Estimator MSE: {}", mse_gaussian_ml_estimator);
+    println!(
+        "Gaussian ML Estimator MSE for Gaussian data: {}",
+        mse_gaussian_ml_estimator
+    );
 
     let t = StudentsT::new(0.0, 1.0, 5.0).unwrap();
     let data_heavy_tailed = generate_d_dimensional_samples(&t, d, number_of_iid_vars);
-    let covariance_matrix_heavy_tailed_ml_estimator =
+    let covariance_matrix_gaussian_ml_estimator_for_heavy_tailed_data =
         estimate_covariance_matrix_gaussian_ml_estimator(&data_heavy_tailed);
     let mse_heavy_tailed_ml_estimator = covariance_matrix_mse_to_true_covariance_matrix(
-        &covariance_matrix_heavy_tailed_ml_estimator,
+        &covariance_matrix_gaussian_ml_estimator_for_heavy_tailed_data,
         &true_variance_matrix,
     );
     println!(
-        "Heavy-tailed ML Estimator MSE: {}",
+        "Gaussian ML Estimator MSE for heavy-tailed data: {}",
         mse_heavy_tailed_ml_estimator
     );
 }
