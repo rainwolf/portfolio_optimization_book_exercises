@@ -1,5 +1,5 @@
 use crate::utils::utils::generate_d_dimensional_samples;
-use statrs::distribution::Normal;
+use statrs::distribution::{Normal, StudentsT};
 
 pub fn exercise03_07() {
     // Consider an N-dimensional i.i.d. time series with zero mean and identity covariance matrix
@@ -53,4 +53,17 @@ pub fn exercise03_07() {
         &true_variance_matrix,
     );
     println!("Gaussian ML Estimator MSE: {}", mse_gaussian_ml_estimator);
+
+    let t = StudentsT::new(0.0, 1.0, 5.0).unwrap();
+    let data_heavy_tailed = generate_d_dimensional_samples(&t, d, number_of_iid_vars);
+    let covariance_matrix_heavy_tailed_ml_estimator =
+        estimate_covariance_matrix_gaussian_ml_estimator(&data_heavy_tailed);
+    let mse_heavy_tailed_ml_estimator = covariance_matrix_mse_to_true_covariance_matrix(
+        &covariance_matrix_heavy_tailed_ml_estimator,
+        &true_variance_matrix,
+    );
+    println!(
+        "Heavy-tailed ML Estimator MSE: {}",
+        mse_heavy_tailed_ml_estimator
+    );
 }
