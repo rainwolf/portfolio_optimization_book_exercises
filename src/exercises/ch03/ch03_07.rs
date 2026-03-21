@@ -110,4 +110,52 @@ pub fn exercise03_07() {
         "Student T ML Estimator MSE for heavy-tailed data: {}",
         mse_student_t_ml_estimator_for_heavy_tailed_data
     );
+
+    let plot_data = (20..100)
+        .step_by(20)
+        .map(|number_of_iid_vars| {
+            let data = generate_d_dimensional_samples(&t, d, number_of_iid_vars);
+            let covariance_matrix_gaussian_ml_estimator =
+                estimate_covariance_matrix_gaussian_ml_estimator(&data);
+            let mse_gaussian_ml_estimator = covariance_matrix_mse_to_true_covariance_matrix(
+                &covariance_matrix_gaussian_ml_estimator,
+                &true_variance_matrix,
+            );
+            let covariance_matrix_student_t_ml_estimator_for_gaussian_data =
+                estimate_covariance_matrix_student_t_ml_estimator(&data);
+            let mse_student_t_ml_estimator_for_gaussian_data =
+                covariance_matrix_mse_to_true_covariance_vec_of_vec(
+                    &covariance_matrix_student_t_ml_estimator_for_gaussian_data,
+                    &true_variance_matrix,
+                );
+            (
+                number_of_iid_vars as f64,
+                mse_gaussian_ml_estimator,
+                mse_student_t_ml_estimator_for_gaussian_data,
+            )
+        })
+        .collect::<Vec<(f64, f64, f64)>>();
+    let mut plot = plotly::Plot::new();
+    let gaussian_ml_estimator_trace = plotly::Scatter::new(
+        plot_data.iter().map(|(n, _, _)| *n).collect(),
+        plot_data
+            .iter()
+            .map(|(_, mse_gaussian, _)| *mse_gaussian)
+            .collect(),
+    )
+    .mode(plotly::common::Mode::LinesMarkers)
+    .name("Gaussian ML Estimator") as Box<dyn plotly::Trace>;
+    plot.add_trace(gaussian_ml_estimator_trace);
+    let student_t_ml_estimator_trace = plotly::Scatter::new(
+        plot_data.iter().map(|(n, _, _)| *n).collect(),
+        plot_data
+            .iter()
+            .map(|(_, _, mse_student_t)| *mse_student_t)
+            .collect(),
+    )
+    .mode(plotly::common::Mode::LinesMarkers)
+    .name("Student T ML Estimator")
+        as Box<dyn plotly::Trace>;
+    plot.add_trace(student_t_ml_estimator_trace);
+    plot.show();
 }
