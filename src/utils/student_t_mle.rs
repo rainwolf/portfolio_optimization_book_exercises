@@ -6,7 +6,7 @@ use argmin::solver::neldermead::NelderMead;
 use argmin_observer_slog::SlogLogger;
 use faer::prelude::Solve;
 use faer::{Col, Mat, Side, linalg::solvers::Llt};
-use statrs::function::gamma::ln_gamma;
+use statrs::function::gamma::{digamma, ln_gamma};
 use std::f64::consts::PI;
 
 // Multivariate Student's t log-likelihood
@@ -195,5 +195,144 @@ pub fn estimate_covariance_matrix_student_t_ml_estimator(data: &[Vec<f64>]) -> M
     if nu < 30.0 {
         println!("\n✓ Heavy tails detected! (ν < 30)");
     }
+    sigma
+}
+
+/// Estimate covariance matrix via EM algorithm for multivariate Student-t MLE.
+///
+/// EM algorithm (Liu & Rubin 1995):
+///   E-step: w_i = (ν + d) / (ν + δ_i)  where δ_i = (x_i - μ)ᵀ Σ⁻¹ (x_i - μ)
+///   M-step: closed-form for μ and Σ; 1D bisection for ν
+///
+/// Much more efficient than Nelder-Mead: scales O(n·d²) per iteration,
+/// no need for a (d²+d+1)-dimensional simplex.
+pub fn estimate_covariance_matrix_student_t_em(data: &[Vec<f64>]) -> Mat<f64> {
+    let n = data.len();
+    let d = data[0].len();
+    let jitter = 1e-6;
+
+    let mut x = Mat::zeros(n, d);
+    for (i, row) in data.iter().enumerate() {
+        for (j, &val) in row.iter().enumerate() {
+            x[(i, j)] = val;
+        }
+    }
+
+    // Initialize μ = sample mean
+    let mut mu = vec![0.0_f64; d];
+    for i in 0..n {
+        for j in 0..d {
+            mu[j] += x[(i, j)];
+        }
+    }
+    for v in mu.iter_mut() {
+        *v /= n as f64;
+    }
+
+    // Initialize Σ = sample covariance + jitter
+    let mut sigma = Mat::zeros(d, d);
+    for i in 0..n {
+        for r in 0..d {
+            for c in 0..d {
+                sigma[(r, c)] += (x[(i, r)] - mu[r]) * (x[(i, c)] - mu[c]);
+            }
+        }
+    }
+    for r in 0..d {
+        for c in 0..d {
+            sigma[(r, c)] /= n as f64;
+        }
+    }
+    for i in 0..d {
+        sigma[(i, i)] += jitter;
+    }
+
+    let mut nu = 5.0_f64;
+
+    for iter in 0..1000 {
+        // E-step: w_i = (ν + d) / (ν + δ_i)
+        let llt = Llt::new(sigma.as_ref(), Side::Lower)
+            .expect("Sigma not positive definite — increase jitter");
+        let mut weights = vec![0.0_f64; n];
+        for i in 0..n {
+            let diff = Col::from_fn(d, |j| x[(i, j)] - mu[j]);
+            let y = llt.solve(diff.as_ref());
+            let delta: f64 = (0..d).map(|j| diff[j] * y[j]).sum();
+            weights[i] = (nu + d as f64) / (nu + delta);
+        }
+        let w_sum: f64 = weights.iter().sum();
+
+        // M-step: μ
+        let mu_old = mu.clone();
+        mu = vec![0.0; d];
+        for i in 0..n {
+            for j in 0..d {
+                mu[j] += weights[i] * x[(i, j)];
+            }
+        }
+        for v in mu.iter_mut() {
+            *v /= w_sum;
+        }
+
+        // M-step: Σ
+        let sigma_old = sigma.clone();
+        sigma = Mat::zeros(d, d);
+        for i in 0..n {
+            for r in 0..d {
+                for c in 0..d {
+                    sigma[(r, c)] += weights[i] * (x[(i, r)] - mu[r]) * (x[(i, c)] - mu[c]);
+                }
+            }
+        }
+        for r in 0..d {
+            for c in 0..d {
+                sigma[(r, c)] /= n as f64;
+            }
+        }
+        for i in 0..d {
+            sigma[(i, i)] += jitter;
+        }
+
+        // M-step: ν via bisection on
+        //   ψ((ν+d)/2) - ln((ν+d)/2) - ψ(ν/2) + ln(ν/2) + c = 0
+        //   where c = (1/n) Σ [ln(w_i) - w_i] + 1
+        let c = weights.iter().map(|&w| w.ln() - w).sum::<f64>() / n as f64 + 1.0;
+        let f_nu = |v: f64| {
+            digamma((v + d as f64) / 2.0) - ((v + d as f64) / 2.0).ln()
+                - digamma(v / 2.0) + (v / 2.0).ln()
+                + c
+        };
+        let (mut lo, mut hi) = (1e-4_f64, 1000.0_f64);
+        if f_nu(lo) * f_nu(hi) < 0.0 {
+            for _ in 0..100 {
+                let mid = (lo + hi) / 2.0;
+                if f_nu(lo) * f_nu(mid) <= 0.0 { hi = mid; } else { lo = mid; }
+                if hi - lo < 1e-9 { break; }
+            }
+            nu = (lo + hi) / 2.0;
+        }
+
+        // Convergence check
+        let mu_change: f64 = mu.iter().zip(&mu_old).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+        let mut sigma_sq_diff = 0.0_f64;
+        for r in 0..d {
+            for c in 0..d {
+                let diff = sigma[(r, c)] - sigma_old[(r, c)];
+                sigma_sq_diff += diff * diff;
+            }
+        }
+        let sigma_change = sigma_sq_diff.sqrt();
+        if mu_change < 1e-8 && sigma_change < 1e-8 {
+            println!("EM converged at iteration {}", iter + 1);
+            break;
+        }
+    }
+
+    println!("\n=== Student-t MLE Results (EM) ===");
+    println!("Degrees of freedom (ν): {:.3}", nu);
+    if nu < 30.0 {
+        println!("Heavy tails detected (ν < 30)");
+    }
+
     sigma
 }

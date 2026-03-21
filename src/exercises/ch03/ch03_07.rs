@@ -1,4 +1,6 @@
-use crate::utils::student_t_mle::estimate_covariance_matrix_student_t_ml_estimator;
+use crate::utils::student_t_mle::{
+    estimate_covariance_matrix_student_t_em, estimate_covariance_matrix_student_t_ml_estimator,
+};
 use crate::utils::utils::generate_d_dimensional_samples;
 use faer::Mat;
 use statrs::distribution::{Normal, StudentsT};
@@ -128,34 +130,52 @@ pub fn exercise03_07() {
                     &covariance_matrix_student_t_ml_estimator_for_gaussian_data,
                     &true_variance_matrix,
                 );
+            let estimate_covariance_matrix_student_t_em_method =
+                estimate_covariance_matrix_student_t_em(&data);
+            let mse_student_t_em_method_for_gaussian_data =
+                covariance_matrix_mse_to_true_covariance_vec_of_vec(
+                    &estimate_covariance_matrix_student_t_em_method,
+                    &true_variance_matrix,
+                );
             (
                 number_of_iid_vars as f64,
                 mse_gaussian_ml_estimator,
                 mse_student_t_ml_estimator_for_gaussian_data,
+                mse_student_t_em_method_for_gaussian_data,
             )
         })
-        .collect::<Vec<(f64, f64, f64)>>();
+        .collect::<Vec<(f64, f64, f64, f64)>>();
     let mut plot = plotly::Plot::new();
     let gaussian_ml_estimator_trace = plotly::Scatter::new(
-        plot_data.iter().map(|(n, _, _)| *n).collect(),
+        plot_data.iter().map(|(n, _, _, _)| *n).collect(),
         plot_data
             .iter()
-            .map(|(_, mse_gaussian, _)| *mse_gaussian)
+            .map(|(_, mse_gaussian, _, _)| *mse_gaussian)
             .collect(),
     )
     .mode(plotly::common::Mode::LinesMarkers)
     .name("Gaussian ML Estimator") as Box<dyn plotly::Trace>;
     plot.add_trace(gaussian_ml_estimator_trace);
     let student_t_ml_estimator_trace = plotly::Scatter::new(
-        plot_data.iter().map(|(n, _, _)| *n).collect(),
+        plot_data.iter().map(|(n, _, _, _)| *n).collect(),
         plot_data
             .iter()
-            .map(|(_, _, mse_student_t)| *mse_student_t)
+            .map(|(_, _, mse_student_t, _)| *mse_student_t)
             .collect(),
     )
     .mode(plotly::common::Mode::LinesMarkers)
     .name("Student T ML Estimator")
         as Box<dyn plotly::Trace>;
     plot.add_trace(student_t_ml_estimator_trace);
+    let student_t_em_method_trace = plotly::Scatter::new(
+        plot_data.iter().map(|(n, _, _, _)| *n).collect(),
+        plot_data
+            .iter()
+            .map(|(_, _, _, mse_student_t_em)| *mse_student_t_em)
+            .collect(),
+    )
+    .mode(plotly::common::Mode::LinesMarkers)
+    .name("Student T EM Method") as Box<dyn plotly::Trace>;
+    plot.add_trace(student_t_em_method_trace);
     plot.show();
 }
