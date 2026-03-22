@@ -14,7 +14,6 @@ pub fn exercise03_07() {
     let n = Normal::new(0.0, 1.0).unwrap();
     let d = 10;
     let number_of_iid_vars = 50;
-    let number_of_experiments = 1000;
     let data = generate_d_dimensional_samples(&n, d, number_of_iid_vars);
     fn estimate_covariance_matrix_gaussian_ml_estimator(data: &[Vec<f64>]) -> Vec<Vec<f64>> {
         let d = data[0].len();
