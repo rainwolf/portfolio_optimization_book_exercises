@@ -237,3 +237,11 @@ where
         })
         .collect::<Vec<Vec<f64>>>()
 }
+
+pub fn vec_to_series(vec: &Vec<f64>) -> Series {
+    Series::from_iter(vec.iter())
+}
+
+pub fn series_to_vec(series: &Series) -> Vec<f64> {
+    series.f64().unwrap().into_iter().flatten().collect()
+}

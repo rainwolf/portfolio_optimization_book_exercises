@@ -14,4 +14,6 @@ pub mod ch03_06;
 pub mod ch03_07;
 #[allow(dead_code)]
 pub mod ch03_08;
+#[allow(dead_code)]
 pub mod ch03_09;
+pub mod ch03_10;
