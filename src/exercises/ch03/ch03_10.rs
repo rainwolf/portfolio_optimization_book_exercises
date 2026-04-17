@@ -1,10 +1,12 @@
 use crate::utils::utils::{
     element_wise_median_of_n_dimensional_samples, generate_d_dimensional_samples, mse_to_data,
-    series_to_vec, vec_to_series,
+    series_to_vec, show_plot_traces, show_plotly_plots, vec_to_series,
 };
 use faer::Side;
 
 use faer::prelude::{Col, Mat, Solve};
+use plotly::Trace;
+use plotly::common::PlotType::Scatter;
 use polars::prelude::Series;
 use statrs::distribution::Normal;
 
@@ -52,5 +54,21 @@ pub fn exercise03_10() {
         .collect::<Vec<Vec<f64>>>();
     let mse = mse_to_data(&data, &true_mean);
     println!("MSE of JS estimator: {mse}");
-    
+    let mse_data = (10..100)
+        .step_by(10)
+        .map(|t| {
+            let data = (0..number_of_experiments)
+                .map(|_| {
+                    let data_gaussian = generate_d_dimensional_samples(&n, d, t);
+                    james_stein_mean_estimator(&data_gaussian, &unit_matrix)
+                })
+                .collect::<Vec<Vec<f64>>>();
+            mse_to_data(&data, &true_mean)
+        })
+        .collect::<Vec<f64>>();
+    let plot = plotly::Scatter::new((10..100).step_by(10).collect::<Vec<usize>>(), mse_data)
+        .mode(plotly::common::Mode::LinesMarkers)
+        .name("MSE of JS estimator") as Box<dyn Trace>;
+    let plots = vec![plot];
+    show_plot_traces(plots, "MSE of JS estimator".into());
 }
