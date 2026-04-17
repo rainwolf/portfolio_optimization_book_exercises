@@ -1,15 +1,12 @@
-use crate::utils::student_t_mle::{
-    estimate_covariance_matrix_student_t_em, estimate_covariance_matrix_student_t_ml_estimator,
-};
 use crate::utils::utils::{
-    element_wise_median_of_n_dimensional_samples, generate_d_dimensional_samples, series_to_vec,
-    vec_to_series,
+    element_wise_median_of_n_dimensional_samples, generate_d_dimensional_samples, mse_to_data,
+    series_to_vec, vec_to_series,
 };
-use faer::{Side, col};
+use faer::Side;
 
 use faer::prelude::{Col, Mat, Solve};
 use polars::prelude::Series;
-use statrs::distribution::{Normal, StudentsT};
+use statrs::distribution::Normal;
 
 pub fn exercise03_10() {
     // Consider an N-dimensional i.i.d. time series with zero mean and identity covariance matrix
@@ -23,7 +20,7 @@ pub fn exercise03_10() {
 
     let unit_matrix: Mat<f64> = Mat::from_fn(d, d, |i, j| if i == j { 1.0 } else { 0.0 });
 
-    fn james_stein_mean_estimator(data: &[Vec<f64>], cov: Mat<f64>) -> Vec<f64> {
+    fn james_stein_mean_estimator(data: &[Vec<f64>], cov: &Mat<f64>) -> Vec<f64> {
         let d = data[0].len();
         let t = data.len();
         let zero = Series::from_iter(vec![0.0; d].iter());
@@ -34,6 +31,7 @@ pub fn exercise03_10() {
             vec_to_series(&element_wise_median_of_n_dimensional_samples(&data));
         let b = (&sample_mean - &target_mean).unwrap();
         let b_col: Col<f64> = Col::from_iter(series_to_vec(&b).into_iter());
+        // should have been done outside if we need to estimate multiple times
         let cov_inv_b = cov.llt(Side::Lower).unwrap().solve(&b_col);
         let rho = (d + 2) as f64 / (d as f64 + 2.0 + t as f64 * (b_col.transpose() * &cov_inv_b));
         let james_stein_estimator = sample_mean * rho + target_mean * (1.0 - rho);
@@ -41,6 +39,18 @@ pub fn exercise03_10() {
     }
     println!(
         "JS estimator: {:?}",
-        james_stein_mean_estimator(&data_gaussian, unit_matrix)
+        james_stein_mean_estimator(&data_gaussian, &unit_matrix)
     );
+
+    let number_of_experiments = 1000;
+    let true_mean = vec![0.0; d];
+    let data = (0..number_of_experiments)
+        .map(|_| {
+            let data_gaussian = generate_d_dimensional_samples(&n, d, t);
+            james_stein_mean_estimator(&data_gaussian, &unit_matrix)
+        })
+        .collect::<Vec<Vec<f64>>>();
+    let mse = mse_to_data(&data, &true_mean);
+    println!("MSE of JS estimator: {mse}");
+    
 }
