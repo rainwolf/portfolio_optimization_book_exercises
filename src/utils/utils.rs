@@ -221,6 +221,15 @@ pub fn mse_to_data(data: &[Vec<f64>], estimator: &[f64]) -> f64 {
         .mean()
 }
 
+pub fn mse_to_matrix_data(data: &[Mat<f64>], estimator: &Mat<f64>) -> f64 {
+    data.iter()
+        .map(|point| {
+            let difference = point - estimator;
+            frobenius_norm_squared(&difference)
+        })
+        .mean()
+}
+
 pub fn generate_d_dimensional_samples<T>(
     distribution: &T,
     dimension: usize,

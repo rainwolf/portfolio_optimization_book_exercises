@@ -1,4 +1,6 @@
-use crate::utils::utils::{frobenius_norm_squared, generate_d_dimensional_samples, vec_to_matrix};
+use crate::utils::utils::{
+    frobenius_norm_squared, generate_d_dimensional_samples, mse_to_matrix_data, vec_to_matrix,
+};
 use faer::prelude::Mat;
 use statrs::distribution::Normal;
 
@@ -46,4 +48,15 @@ pub fn exercise03_11() {
         "LW estimator: {:?}",
         ledoit_wolf_covariance_estimator(&data_gaussian)
     );
+
+    let number_of_experiments = 1000;
+    let true_cov = Mat::identity(d as usize, d as usize) as Mat<f64>;
+    let data = (0..number_of_experiments)
+        .map(|_| {
+            let data_gaussian = generate_d_dimensional_samples(&n, d, t);
+            ledoit_wolf_covariance_estimator(&data_gaussian)
+        })
+        .collect::<Vec<Mat<f64>>>();
+    let mse = mse_to_matrix_data(&data, &true_cov);
+    println!("MSE of LW estimator: {mse}");
 }
