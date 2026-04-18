@@ -1,7 +1,9 @@
 use crate::utils::utils::{
-    frobenius_norm_squared, generate_d_dimensional_samples, mse_to_matrix_data, vec_to_matrix,
+    frobenius_norm_squared, generate_d_dimensional_samples, mse_to_data, mse_to_matrix_data,
+    show_plot_traces, vec_to_matrix,
 };
 use faer::prelude::Mat;
+use plotly::Trace;
 use statrs::distribution::Normal;
 
 pub fn exercise03_11() {
@@ -59,4 +61,22 @@ pub fn exercise03_11() {
         .collect::<Vec<Mat<f64>>>();
     let mse = mse_to_matrix_data(&data, &true_cov);
     println!("MSE of LW estimator: {mse}");
+
+    let mse_data = (10..100)
+        .step_by(10)
+        .map(|t| {
+            let data = (0..number_of_experiments)
+                .map(|_| {
+                    let data_gaussian = generate_d_dimensional_samples(&n, d, t);
+                    ledoit_wolf_covariance_estimator(&data_gaussian)
+                })
+                .collect::<Vec<Mat<f64>>>();
+            mse_to_matrix_data(&data, &true_cov)
+        })
+        .collect::<Vec<f64>>();
+    let plot = plotly::Scatter::new((10..100).step_by(10).collect::<Vec<usize>>(), mse_data)
+        .mode(plotly::common::Mode::LinesMarkers)
+        .name("MSE of LW estimator") as Box<dyn Trace>;
+    let plots = vec![plot];
+    show_plot_traces(plots, "MSE of LW estimator".into());
 }
