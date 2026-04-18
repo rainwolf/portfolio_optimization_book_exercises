@@ -1,4 +1,5 @@
 use build_html::*;
+use faer::Mat;
 use plotly::{Plot, Trace};
 use polars::prelude::*;
 use rand::distributions::Distribution;
@@ -244,4 +245,12 @@ pub fn vec_to_series(vec: &Vec<f64>) -> Series {
 
 pub fn series_to_vec(series: &Series) -> Vec<f64> {
     series.f64().unwrap().into_iter().flatten().collect()
+}
+
+pub fn frobenius_norm_squared(mat: &Mat<f64>) -> f64 {
+    mat.norm_l2().powi(2)
+}
+
+pub fn vec_to_matrix(vec: &[f64]) -> Mat<f64> {
+    Mat::from_fn(vec.len(), 1, |i, _| vec[i])
 }
