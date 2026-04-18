@@ -1,6 +1,6 @@
 use crate::utils::utils::{
-    frobenius_norm_squared, generate_d_dimensional_samples, mse_to_data, mse_to_matrix_data,
-    show_plot_traces, vec_to_matrix,
+    frobenius_norm_squared, generate_d_dimensional_samples, mse_to_matrix_data, show_plot_traces,
+    vec_to_matrix,
 };
 use faer::prelude::Mat;
 use plotly::Trace;
@@ -22,7 +22,7 @@ pub fn exercise03_11() {
 
         let data_mats = data
             .iter()
-            .map(|point| vec_to_matrix(&point))
+            .map(|point| vec_to_matrix(point))
             .collect::<Vec<Mat<f64>>>();
         let mean_col = data_mats
             .iter()
@@ -52,7 +52,7 @@ pub fn exercise03_11() {
     );
 
     let number_of_experiments = 1000;
-    let true_cov = Mat::identity(d as usize, d as usize) as Mat<f64>;
+    let true_cov = Mat::identity(d, d) as Mat<f64>;
     let data = (0..number_of_experiments)
         .map(|_| {
             let data_gaussian = generate_d_dimensional_samples(&n, d, t);
