@@ -17,6 +17,8 @@ pub fn main() {
     // exercise03_08();
     // use crate::exercises::ch03::ch03_09::exercise03_09;
     // exercise03_09();
-    use crate::exercises::ch03::ch03_10::exercise03_10;
-    exercise03_10();
+    // use crate::exercises::ch03::ch03_10::exercise03_10;
+    // exercise03_10();
+    use crate::exercises::ch03::ch03_11::exercise03_11;
+    exercise03_11();
 }

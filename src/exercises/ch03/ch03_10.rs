@@ -1,12 +1,11 @@
 use crate::utils::utils::{
     element_wise_median_of_n_dimensional_samples, generate_d_dimensional_samples, mse_to_data,
-    series_to_vec, show_plot_traces, show_plotly_plots, vec_to_series,
+    series_to_vec, show_plot_traces, vec_to_series,
 };
 use faer::Side;
 
 use faer::prelude::{Col, Mat, Solve};
 use plotly::Trace;
-use plotly::common::PlotType::Scatter;
 use polars::prelude::Series;
 use statrs::distribution::Normal;
 
@@ -36,6 +35,7 @@ pub fn exercise03_10() {
         // should have been done outside if we need to estimate multiple times
         let cov_inv_b = cov.llt(Side::Lower).unwrap().solve(&b_col);
         let rho = (d + 2) as f64 / (d as f64 + 2.0 + t as f64 * (b_col.transpose() * &cov_inv_b));
+        let rho = rho.min(1.0);
         let james_stein_estimator = sample_mean * rho + target_mean * (1.0 - rho);
         series_to_vec(&james_stein_estimator.unwrap())
     }
