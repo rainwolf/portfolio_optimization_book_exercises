@@ -1,11 +1,11 @@
-use crate::utils::utils::load_crypto_data;
+use crate::utils::utils::load_crypto_data_with_plotlars;
 
 pub fn exercise02_02() {
     // Choose one asset and plot the price time series using both
     // a linear and a logarithmic scale. Compare the plots and comment.
-    let data_set = load_crypto_data();
+    let data_set = load_crypto_data_with_plotlars();
 
-    use polars::prelude::*;
+    use plotlars::polars::prelude::*;
     let plot_data = data_set
         .select([
             col("Date").cast(DataType::Datetime(TimeUnit::Nanoseconds, None)),

@@ -3,7 +3,7 @@ use crate::utils::utils::{
 };
 use plotly::{HeatMap, Trace};
 use polars::prelude::*;
-use rand::seq::SliceRandom;
+use rand::prelude::IndexedRandom;
 
 pub fn exercise02_06() {
     let stocks_data_set = load_stocks_data();
@@ -19,9 +19,9 @@ pub fn exercise02_06() {
         .filter(|s| s != "Date")
         .collect::<Vec<String>>();
     let number_of_cols = 10;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let random_cols = stock_col_names
-        .choose_multiple(&mut rng, number_of_cols)
+        .sample(&mut rng, number_of_cols)
         .into_iter()
         .map(|s| s.clone())
         .collect::<Vec<String>>();

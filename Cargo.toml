@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-polars = { version = "0.53.0", features = [
+polars = { version = "0.55.2", features = [
     "lazy",
     "parquet",
     "temporal",
@@ -14,13 +14,25 @@ polars = { version = "0.53.0", features = [
     "cov",
     "timezones",
 ] }
-plotlars = "0.11.4"
+plotlars = { version = "0.12.6", features = ["plotly"] }
+# Feature-sync only — never imported in code. plotlars 0.12.6 pins polars 0.54.4 with
+# just ["lazy", "dtype-categorical", "timezones", "parquet", "strings"]. Cargo unifies
+# features across same-package, semver-compatible deps, so this entry grants the missing
+# ones to `plotlars::polars::prelude` (rolling_mean, RollingOptionsFixedWindow, ...).
+# Only the early ch02 exercises need it — they plot via plotlars; later chapters use plotly.
+polars_054 = { package = "polars", version = "0.54.4", features = [
+    "rolling_window",
+    "moment",
+    "cov",
+    "log",
+] }
 plotly = "0.14.0"
 build_html = "2.7.0"
-statrs = { version = "0.18.0", features = ["rand"] }
+statrs = { version = "0.19.1", features = ["rand", "nalgebra"] }
 tempfile = "3.25.0"
-rand = { version = "0.8", features = ["std", "std_rng", "small_rng"] }
+rand = { version = "0.10.2", features = ["std", "std_rng", "sys_rng"] }
 faer = "0.24.0"
 argmin = "0.11.0"
 argmin-math = { version = "0.5", features = ["vec"] }
 argmin-observer-slog = "0.2.0"
+nalgebra = "0.35.0"

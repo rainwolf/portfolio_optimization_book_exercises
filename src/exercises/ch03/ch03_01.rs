@@ -1,8 +1,7 @@
 use plotly::Histogram;
 use plotly::Scatter;
 use polars::prelude::*;
-use rand::distributions::Distribution;
-use rand::rngs::SmallRng;
+use rand::distr::Distribution;
 
 use crate::utils::utils::show_plot_traces;
 
@@ -13,7 +12,7 @@ pub fn exercise03_01() {
     let n = Normal::new(true_mean, true_std).unwrap();
 
     // Sample from the distribution using Distribution trait
-    let mut rng: SmallRng = rand::SeedableRng::from_entropy();
+    let mut rng = rand::rng();
     // let sample = n.sample(&mut rng);
     let bins = 21;
     let number_of_experiments = 1000;

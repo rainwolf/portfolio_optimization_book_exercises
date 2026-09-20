@@ -7,8 +7,8 @@ use plotly::Scatter;
 use plotly::Trace;
 use plotly::color::NamedColor;
 use plotly::common::Mode;
-use rand::distributions::Distribution;
-use rand::prelude::SmallRng;
+use rand::distr::Distribution;
+use rand::prelude::ThreadRng;
 
 pub fn exercise03_03() {
     use statrs::distribution::Normal;
@@ -17,14 +17,14 @@ pub fn exercise03_03() {
     let n = Normal::new(true_mean, true_std).unwrap();
 
     // Sample from the distribution using Distribution trait
-    let mut rng: SmallRng = rand::SeedableRng::from_entropy();
+    let mut rng = rand::rng();
 
     let d = 2;
     let number_of_iid_vars = 20;
     let number_of_experiments = 1000;
     fn generate_d_dimensional_n_normal_samples(
         n: &Normal,
-        rng: &mut SmallRng,
+        rng: &mut ThreadRng,
         d: usize,
         number_of_iid_vars: usize,
     ) -> Vec<Vec<f64>> {

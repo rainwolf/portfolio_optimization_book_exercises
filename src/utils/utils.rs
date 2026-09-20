@@ -1,9 +1,8 @@
 use build_html::*;
 use faer::Mat;
 use plotly::{Plot, Trace};
-use polars::prelude::*;
-use rand::distributions::Distribution;
-use rand::prelude::SmallRng;
+use polars::prelude::{LazyFrame, PlRefPath, Series, cov};
+use rand::{distr::Distribution, rngs::ThreadRng};
 use statrs::statistics::Statistics;
 use std::{io::Write, process::Command};
 use tempfile::NamedTempFile;
@@ -11,6 +10,17 @@ use tempfile::NamedTempFile;
 pub fn load_crypto_data() -> LazyFrame {
     let data_set = LazyFrame::scan_parquet(
         PlRefPath::new("./cryptos_2017to2021_daily.parquet"),
+        Default::default(),
+    )
+    .unwrap();
+    // let print_set = data_set.clone();
+    // println!("{:?}", print_set.first().collect().unwrap());
+    data_set
+}
+
+pub fn load_crypto_data_with_plotlars() -> plotlars::polars::prelude::LazyFrame {
+    let data_set = plotlars::polars::prelude::LazyFrame::scan_parquet(
+        plotlars::polars::prelude::PlRefPath::new("./cryptos_2017to2021_daily.parquet"),
         Default::default(),
     )
     .unwrap();
@@ -97,27 +107,27 @@ pub fn show_plotly_plots(plots: Vec<Plot>, title: Option<&str>) {
         .expect("DEFAULT_HTML_APP_NOT_FOUND");
 }
 
-use polars::prelude::cov::pearson_corr;
-pub fn auto_correlation(data: &DataFrame, column: &str, lag: i32) -> Option<f64> {
+use cov::pearson_corr;
+pub fn auto_correlation(data: &polars::prelude::DataFrame, column: &str, lag: i32) -> Option<f64> {
     let col1 = data
         .column(column)
         .unwrap()
-        .cast(&DataType::Float64)
+        .cast(&polars::prelude::DataType::Float64)
         .unwrap();
     let col2 = col1.shift(lag.into());
     pearson_corr(col1.f64().unwrap(), col2.f64().unwrap())
 }
 
-pub fn cross_correlation(data: &DataFrame, column1: &str, column2: &str) -> f64 {
+pub fn cross_correlation(data: &polars::prelude::DataFrame, column1: &str, column2: &str) -> f64 {
     let col1 = data
         .column(column1)
         .unwrap()
-        .cast(&DataType::Float64)
+        .cast(&polars::prelude::DataType::Float64)
         .unwrap();
     let col2 = data
         .column(column2)
         .unwrap()
-        .cast(&DataType::Float64)
+        .cast(&polars::prelude::DataType::Float64)
         .unwrap();
     pearson_corr(col1.f64().unwrap(), col2.f64().unwrap()).unwrap()
 }
@@ -146,7 +156,7 @@ pub fn element_wise_median_of_n_dimensional_samples(samples: &[Vec<f64>]) -> Vec
 
 pub fn weiszfeld_geometric_median(points: &[Vec<f64>], max_iterations: usize) -> Vec<f64> {
     let d = points[0].len();
-    let points_as_series: Vec<Series> = points
+    let points_as_series: Vec<polars::prelude::Series> = points
         .iter()
         .map(|point| Series::from_iter(point.iter()))
         .collect();
@@ -196,12 +206,7 @@ pub fn weiszfeld_geometric_median(points: &[Vec<f64>], max_iterations: usize) ->
             break;
         }
     }
-    median
-        .f64()
-        .unwrap()
-        .into_iter()
-        .flatten()
-        .collect::<Vec<f64>>()
+    median.f64().unwrap().iter().flatten().collect::<Vec<f64>>()
 }
 
 pub fn mse_to_data(data: &[Vec<f64>], estimator: &[f64]) -> f64 {
@@ -238,7 +243,7 @@ pub fn generate_d_dimensional_samples<T>(
 where
     T: Distribution<f64>,
 {
-    let mut rng: SmallRng = rand::SeedableRng::from_entropy();
+    let mut rng: ThreadRng = rand::rng();
     (0..number_of_iid_vars)
         .map(|_| {
             (0..dimension)
@@ -252,8 +257,8 @@ pub fn vec_to_series(vec: &Vec<f64>) -> Series {
     Series::from_iter(vec.iter())
 }
 
-pub fn series_to_vec(series: &Series) -> Vec<f64> {
-    series.f64().unwrap().into_iter().flatten().collect()
+pub fn series_to_vec(series: &polars::prelude::Series) -> Vec<f64> {
+    series.f64().unwrap().iter().flatten().collect()
 }
 
 pub fn frobenius_norm_squared(mat: &Mat<f64>) -> f64 {
