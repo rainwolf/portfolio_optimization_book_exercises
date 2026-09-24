@@ -36,3 +36,4 @@ argmin = "0.11.0"
 argmin-math = { version = "0.5", features = ["vec"] }
 argmin-observer-slog = "0.2.0"
 nalgebra = "0.35.0"
+#efficient_pca = { version = "0.1.8", default-features = true }
