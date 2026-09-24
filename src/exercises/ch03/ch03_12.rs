@@ -1,4 +1,4 @@
-use crate::utils::utils::vec_to_matrix;
+use crate::utils::utils::{mse_to_matrix_data, vec_to_matrix};
 use nalgebra::DVector;
 use polars::polars_utils::itertools::Itertools;
 use rand::distr::Distribution;
@@ -68,4 +68,7 @@ pub fn exercise03_12() {
     let sigma = single_factor_cov(&data);
 
     println!("{:?}", sigma);
+
+    let mean_squared_error = mse_to_matrix_data(&vec![sigma], &true_cov);
+    println!("Mean Squared Error: {:?}", mean_squared_error);
 }
