@@ -81,6 +81,36 @@ pub fn show_plot_traces(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
         .expect("DEFAULT_HTML_APP_NOT_FOUND");
 }
 
+pub fn show_plot_traces_in_one_plot(traces: Vec<Box<dyn Trace>>, title: Option<&str>) {
+    let mut base = HtmlPage::new()
+        .with_title(title.unwrap_or("Plotly-rs Multiple Plots"))
+        .with_script_link("https://cdn.plot.ly/plotly-latest.min.js")
+        .with_header(
+            1,
+            title.unwrap_or("Multiple Plotly plots on the same HTML page"),
+        );
+    use plotly::Plot;
+    let mut plot = Plot::new();
+    for (i, trace) in traces.iter().enumerate() {
+        plot.add_trace(trace.clone());
+    }
+    base.add_raw(
+        plot.to_inline_html(Some(format!("test_{}", 0).as_str()))
+            .as_str(),
+    );
+    let html = base.to_html_string();
+
+    let (mut file, path) = NamedTempFile::with_suffix(".html").unwrap().keep().unwrap();
+    // Save the rendered plot to the temp file.
+    file.write_all(html.as_bytes())
+        .expect("failed to write html output");
+    file.flush().unwrap();
+    Command::new("open")
+        .args([path.to_str().unwrap()])
+        .output()
+        .expect("DEFAULT_HTML_APP_NOT_FOUND");
+}
+
 pub fn show_plotly_plots(plots: Vec<Plot>, title: Option<&str>) {
     let mut base = HtmlPage::new()
         .with_title(title.unwrap_or("Plotly-rs Multiple Plots"))

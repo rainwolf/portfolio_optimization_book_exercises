@@ -1,4 +1,4 @@
-use crate::utils::utils::{mse_to_matrix_data, show_plot_traces, vec_to_matrix};
+use crate::utils::utils::{mse_to_matrix_data, show_plot_traces_in_one_plot};
 use nalgebra::DVector;
 use plotly::Trace;
 use polars::polars_utils::itertools::Itertools;
@@ -20,6 +20,7 @@ pub fn exercise03_12() {
     }
     let dimension = 10;
     let number_of_samples = 20;
+    let number_of_experiments = 100;
     let true_mean = vec![0.1; dimension];
     let true_cov: Mat<f64> = Mat::identity(dimension, dimension);
     let true_cov_vec: Vec<f64> = true_cov
@@ -66,28 +67,59 @@ pub fn exercise03_12() {
         sigma
     }
 
-    let sigma = single_factor_cov(&data);
+    fn sample_cov(data: &Mat<f64>) -> Mat<f64> {
+        let (t, n) = (data.nrows(), data.ncols());
+        let mean = data.row_iter().fold(Row::<f64>::zeros(n), |acc, r| acc + r) / t as f64;
+        let mut centered_data = data.clone();
+        centered_data.row_iter_mut().for_each(|mut r| r -= &mean);
+        let cov = &centered_data.transpose() * &centered_data / (t - 1) as f64;
+        cov
+    }
 
+    let sigma = single_factor_cov(&data);
     println!("{:?}", sigma);
 
     let mean_squared_error = mse_to_matrix_data(&vec![sigma], &true_cov);
     println!("Mean Squared Error: {:?}", mean_squared_error);
 
-    let mean_squared_errors = (10..=100)
+    let mean_squared_errors_sfe = (10..=100)
         .step_by(10)
         .map(|t| {
-            let data = generate_t_multivariable_samples(t, dimension, &distribution);
-            let sigma = single_factor_cov(&data);
-            mse_to_matrix_data(&vec![sigma], &true_cov)
+            let datas = (0..number_of_experiments)
+                .map(|_| {
+                    let data = generate_t_multivariable_samples(t, dimension, &distribution);
+                    single_factor_cov(&data)
+                })
+                .collect::<Vec<Mat<f64>>>();
+            mse_to_matrix_data(&datas, &true_cov)
         })
         .collect::<Vec<f64>>();
 
-    let plot = plotly::Scatter::new(
+    let mean_squared_error_sample_cov = (10..=100)
+        .step_by(10)
+        .map(|t| {
+            let datas = (0..number_of_experiments)
+                .map(|_| {
+                    let data = generate_t_multivariable_samples(t, dimension, &distribution);
+                    sample_cov(&data)
+                })
+                .collect::<Vec<Mat<f64>>>();
+            mse_to_matrix_data(&datas, &true_cov)
+        })
+        .collect::<Vec<f64>>();
+
+    let plot_sfe = plotly::Scatter::new(
         (10..=100).step_by(10).collect::<Vec<usize>>(),
-        mean_squared_errors,
+        mean_squared_errors_sfe,
     )
     .mode(plotly::common::Mode::LinesMarkers)
     .name("MSE of Factor Model Estimator") as Box<dyn Trace>;
-    let plots = vec![plot];
-    show_plot_traces(plots, "MSE of Factor Model Estimator".into());
+    let plot_sample_cov = plotly::Scatter::new(
+        (10..=100).step_by(10).collect::<Vec<usize>>(),
+        mean_squared_error_sample_cov,
+    )
+    .mode(plotly::common::Mode::LinesMarkers)
+    .name("MSE of Sample Covariance Estimator") as Box<dyn Trace>;
+    let plots = vec![plot_sfe, plot_sample_cov];
+    show_plot_traces_in_one_plot(plots, "MSE of Factor Model Estimator".into());
 }
