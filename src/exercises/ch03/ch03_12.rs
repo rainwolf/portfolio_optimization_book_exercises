@@ -1,5 +1,6 @@
-use crate::utils::utils::{mse_to_matrix_data, vec_to_matrix};
+use crate::utils::utils::{mse_to_matrix_data, show_plot_traces, vec_to_matrix};
 use nalgebra::DVector;
+use plotly::Trace;
 use polars::polars_utils::itertools::Itertools;
 use rand::distr::Distribution;
 use rand::prelude::ThreadRng;
@@ -71,4 +72,22 @@ pub fn exercise03_12() {
 
     let mean_squared_error = mse_to_matrix_data(&vec![sigma], &true_cov);
     println!("Mean Squared Error: {:?}", mean_squared_error);
+
+    let mean_squared_errors = (10..=100)
+        .step_by(10)
+        .map(|t| {
+            let data = generate_t_multivariable_samples(t, dimension, &distribution);
+            let sigma = single_factor_cov(&data);
+            mse_to_matrix_data(&vec![sigma], &true_cov)
+        })
+        .collect::<Vec<f64>>();
+
+    let plot = plotly::Scatter::new(
+        (10..=100).step_by(10).collect::<Vec<usize>>(),
+        mean_squared_errors,
+    )
+    .mode(plotly::common::Mode::LinesMarkers)
+    .name("MSE of Factor Model Estimator") as Box<dyn Trace>;
+    let plots = vec![plot];
+    show_plot_traces(plots, "MSE of Factor Model Estimator".into());
 }
