@@ -91,8 +91,8 @@ pub fn show_plot_traces_in_one_plot(traces: Vec<Box<dyn Trace>>, title: Option<&
         );
     use plotly::Plot;
     let mut plot = Plot::new();
-    for (i, trace) in traces.iter().enumerate() {
-        plot.add_trace(trace.clone());
+    for p in traces.iter() {
+        plot.add_trace(p.clone());
     }
     base.add_raw(
         plot.to_inline_html(Some(format!("test_{}", 0).as_str()))
