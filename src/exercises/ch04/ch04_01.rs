@@ -10,47 +10,99 @@ pub fn exercise04_01() {
         [rand::random_range(1..unwrapped_data.get_column_names().len())]
     .clone()
     .to_string();
-    let return_colname = format!("{}_return", colname);
-    let logreturn_colname = format!("{}_logreturn", colname);
 
+    // Compute simple returns at all frequencies, then log returns from each
     let data = data
-        // .lazy()
+        // Daily
         .with_column(
             (polars::prelude::col(&colname) / polars::prelude::col(&colname).shift(1.into())
                 - polars::prelude::lit(1))
-            .alias(&return_colname),
+            .alias(format!("{}_daily_return", colname)),
         )
         .with_column(
-            (polars::prelude::col(&return_colname) + polars::prelude::lit(1))
+            (polars::prelude::col(format!("{}_daily_return", colname)) + polars::prelude::lit(1))
                 .log(polars::prelude::lit(2))
-                .alias(&logreturn_colname),
+                .alias(format!("{}_daily_logreturn", colname)),
+        )
+        // Weekly
+        .with_column(
+            (polars::prelude::col(&colname) / polars::prelude::col(&colname).shift(5.into())
+                - polars::prelude::lit(1))
+            .alias(format!("{}_weekly_return", colname)),
+        )
+        .with_column(
+            (polars::prelude::col(format!("{}_weekly_return", colname)) + polars::prelude::lit(1))
+                .log(polars::prelude::lit(2))
+                .alias(format!("{}_weekly_logreturn", colname)),
+        )
+        // Monthly
+        .with_column(
+            (polars::prelude::col(&colname) / polars::prelude::col(&colname).shift(21.into())
+                - polars::prelude::lit(1))
+            .alias(format!("{}_monthly_return", colname)),
+        )
+        .with_column(
+            (polars::prelude::col(format!("{}_monthly_return", colname)) + polars::prelude::lit(1))
+                .log(polars::prelude::lit(2))
+                .alias(format!("{}_monthly_logreturn", colname)),
+        )
+        // Quarterly
+        .with_column(
+            (polars::prelude::col(&colname) / polars::prelude::col(&colname).shift(63.into())
+                - polars::prelude::lit(1))
+            .alias(format!("{}_quarterly_return", colname)),
+        )
+        .with_column(
+            (polars::prelude::col(format!("{}_quarterly_return", colname)) + polars::prelude::lit(1))
+                .log(polars::prelude::lit(2))
+                .alias(format!("{}_quarterly_logreturn", colname)),
         )
         .select([
             polars::prelude::col(&colname),
-            polars::prelude::col(&return_colname),
-            polars::prelude::col(&logreturn_colname),
+            polars::prelude::col(format!("{}_daily_return", colname)),
+            polars::prelude::col(format!("{}_daily_logreturn", colname)),
+            polars::prelude::col(format!("{}_weekly_return", colname)),
+            polars::prelude::col(format!("{}_weekly_logreturn", colname)),
+            polars::prelude::col(format!("{}_monthly_return", colname)),
+            polars::prelude::col(format!("{}_monthly_logreturn", colname)),
+            polars::prelude::col(format!("{}_quarterly_return", colname)),
+            polars::prelude::col(format!("{}_quarterly_logreturn", colname)),
         ])
-        .filter(polars::prelude::col(&logreturn_colname).is_not_null())
+        .filter(polars::prelude::col(format!("{}_quarterly_logreturn", colname)).is_not_null())
         .collect()
         .unwrap();
 
-    let lag_range = 10;
-    fn lags(n: i32) -> std::ops::RangeInclusive<i32> {
-        0..=n
+    let lag_ranges: &[(&str, i32)] = &[
+        ("daily", 30),
+        ("weekly", 30),
+        ("monthly", 30),
+        ("quarterly", 30),
+    ];
+
+    let mut traces: Vec<Box<dyn Trace>> = Vec::new();
+
+    for (label, lag_range) in lag_ranges {
+        let freq_col = format!("{}_{}_logreturn", colname, label);
+        let auto_corrs: Vec<f64> = (0..=*lag_range)
+            .map(|lag| {
+                crate::utils::utils::auto_correlation(&data, &freq_col, lag).unwrap_or(0.0)
+            })
+            .collect();
+
+        let auto_corr_plot = Scatter::new(
+            (0..=*lag_range).map(|x| x as f64).collect(),
+            auto_corrs,
+        )
+            .name(label)
+            .mode(plotly::common::Mode::Lines) as Box<dyn Trace>;
+
+        traces.push(auto_corr_plot);
     }
-    let auto_corrs = lags(lag_range)
-        .map(|lag| {
-            crate::utils::utils::auto_correlation(&data, &logreturn_colname, lag).unwrap_or(0.0)
-        })
-        .collect::<Vec<f64>>();
 
-    let auto_corr_plot = Scatter::new(lags(lag_range).map(|x| x as f64).collect(), auto_corrs)
-        .mode(plotly::common::Mode::Lines) as Box<dyn Trace>;
-
-    show_plot_traces(
-        vec![auto_corr_plot],
-        Some(format!("Autocorrelation of Log-Returns for {}", colname).as_str()),
-    );
+    let title = format!("Autocorrelation of Log-Returns for {}", colname);
+    let plot_title = Some(title.as_str());
+    show_plot_traces(traces.clone(), plot_title);
+    crate::utils::utils::show_plot_traces_in_one_plot(traces, plot_title);
 
     println!("{:?}", data);
 }
