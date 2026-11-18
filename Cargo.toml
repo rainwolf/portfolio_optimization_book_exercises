@@ -13,6 +13,7 @@ polars = { version = "0.55.2", features = [
     "moment",
     "cov",
     "timezones",
+    "rolling_window_by",
 ] }
 plotlars = { version = "0.12.6", features = ["plotly"] }
 # Feature-sync only — never imported in code. plotlars 0.12.6 pins polars 0.54.4 with

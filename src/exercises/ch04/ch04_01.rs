@@ -1,6 +1,7 @@
 use crate::utils::utils::{load_stocks_data, show_plot_traces};
 use plotly::{Scatter, Trace};
 
+#[allow(dead_code)] // call is toggled off in ch04_main.rs
 pub fn exercise04_01() {
     // (Autocorrelation function of returns) Choose one asset and plot the autocorrelation
     // function of the log-returns at different frequencies.
